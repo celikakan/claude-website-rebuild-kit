@@ -1,0 +1,66 @@
+# =====================================================================
+# Skill-Manifest fuer das Claude Website-Rebuild Kit
+# =====================================================================
+# EINEN NEUEN SKILL HINZUFUEGEN = EINE ZEILE ANHAENGEN, install.sh
+# liest diese Datei bei jedem Lauf neu ein. Danach beim Kunden einfach
+# den Install-Befehl erneut ausfuehren.
+#
+# Format (Felder mit | getrennt):
+#   TYP|QUELLE|SKILL-NAME|BESCHREIBUNG
+#
+# TYP:
+#   custom = Skill liegt in diesem Kit unter skills/<name>
+#   github = Skill wird aus einem GitHub-Repo geladen (QUELLE = Repo-URL)
+#   plugin = Claude-Code-Plugin ueber Marketplace (QUELLE = marketplace-repo)
+#   npm    = Kommandozeilen-Werkzeug via npm (QUELLE = Paketname)
+# =====================================================================
+
+# --- Custom-Skills (im Kit enthalten) --------------------------------
+custom|skills/website-rebuild|website-rebuild|Kompletter Website-Rebuild Workflow mit 9 Schritten und 3 Freigabe-Gates
+custom|skills/brand-board|brand-board|Brand Board aus Kundenwebsite und Dokumenten (Farben, Typo, Logo, Tonalitaet)
+custom|skills/seo-aeo-audit|seo-aeo-audit|Deutscher 6-Schritte-Audit fuer SEO und AEO mit Roadmap und KPIs
+custom|skills/geo-aeo-deepdive|geo-aeo-deepdive|Vertieft Audits zu GEO+AEO-Massnahmenreport mit Tool-Anleitungen
+custom|skills/novamira|novamira|WordPress-Steuerung ueber die Novamira-CLI (Deploy-Phase)
+custom|skills/grill-me|grill-me|Interview-Verhoer zum Plan: alle offenen Fragen klaeren vor dem Start
+custom|skills/google-business-profile|google-business-profile|Google Unternehmensprofil: anlegen, optimieren, Local SEO
+
+# --- Fremd-Skills (werden aus Original-Repos geladen) ----------------
+github|https://github.com/anthropics/claude-code|frontend-design|Hochwertige, eigenstaendige Frontend-Oberflaechen (Anthropic, offiziell)
+github|https://github.com/affaan-m/ECC|security-review|Sicherheitspruefung: Formulare, Eingaben, Endpunkte
+github|https://github.com/anthropics/skills|webapp-testing|Lokale Webseite mit Playwright durchklicken und testen (Anthropic, offiziell)
+github|https://github.com/pbakaus/impeccable|impeccable|Design-Qualitaets-System gegen KI-Einheitslook (Apache 2.0)
+github|https://github.com/lackeyjb/playwright-skill|playwright-skill|Browser-Automation: fremde Webseiten oeffnen, Screenshots, Ablaeufe
+github|https://github.com/firecrawl/cli|firecrawl|Webseiten-Inhalte sauber als Markdown erfassen (Scraping/Crawling)
+github|https://github.com/robonuggets/design-system|design-system|Design-System-Referenzseite und Brand Book generieren
+github|https://github.com/ordinarynerds/brand-book|brand-book-html|Brand Book als digitale HTML-Seite
+github|https://github.com/ordinarynerds/brand-book|brand-book-paper|Brand Book als druckfertiges A4-Dokument
+github|https://github.com/affaan-m/ECC|make-interfaces-feel-better|Feinschliff: Abstaende, Typografie, Schatten, Zustaende
+github|https://github.com/affaan-m/ECC|motion-ui|Animationen und Uebergaenge fuer moderne Weboberflaechen
+github|https://github.com/coreyhaines31/marketingskills|site-architecture|Seitenstruktur, Navigation und URL-Aufbau planen
+github|https://github.com/coreyhaines31/marketingskills|copywriting|Ueberzeugende Webseiten-Texte schreiben und verbessern
+github|https://github.com/vercel-labs/agent-skills|web-design-guidelines|Web-Design-Leitlinien von Vercel (Typo, Layout, Interaktion)
+github|https://github.com/shadcn-ui/ui|shadcn|shadcn/ui Komponenten-System korrekt einsetzen
+github|https://github.com/leonxlnx/taste-skill|taste-skill|Geschmacks-Leitplanken fuer eigenstaendiges, hochwertiges Design
+github|https://github.com/leonxlnx/taste-skill|industrial-brutalist-ui|Design-Richtung Industrial/Brutalist als Stil-Vorlage
+github|https://github.com/nextlevelbuilder/ui-ux-pro-max-skill|ui-ux-pro-max|UI/UX-Profi-Regeln fuer durchdachte Oberflaechen
+github|https://github.com/hamzafarooq/claude-code-starter|brutalist-skill|Design-Richtung Brutalist: rohe, markante Web-Optik
+github|https://github.com/greensock/gsap-skills|gsap-core|GSAP-Grundlagen: Animationen professionell umsetzen (offiziell)
+github|https://github.com/greensock/gsap-skills|gsap-timeline|GSAP-Timelines: Animationsablaeufe choreografieren (offiziell)
+github|https://github.com/greensock/gsap-skills|gsap-scrolltrigger|GSAP-ScrollTrigger: Effekte beim Scrollen (offiziell)
+github|https://github.com/bradautomates/claude-video|watch|Videos ansehen und auswerten: Transkript, Standbilder, Anleitungen daraus bauen
+github|https://github.com/anthropics/skills|pdf|PDFs erstellen, pruefen, zusammenfuehren (Anthropic, offiziell)
+github|https://github.com/coreyhaines31/marketingskills|schema|Strukturierte Daten (JSON-LD) fuer Google und KI-Suchen
+github|https://github.com/coreyhaines31/marketingskills|image|Marketing-Bilder erzeugen und optimieren
+github|https://github.com/coreyhaines31/marketingskills|cro|Conversion-Check: warum Besucher nicht anfragen oder kaufen
+github|https://github.com/coreyhaines31/marketingskills|analytics|Google Analytics 4 und Ereignis-Messung einrichten
+github|https://github.com/coreyhaines31/marketingskills|competitor-profiling|Wettbewerber-Webseiten systematisch analysieren
+
+# --- Plugins (Claude-Code-Marketplace) -------------------------------
+plugin|obra/superpowers-marketplace|superpowers|Arbeitsdisziplin: Brainstorming vor Code, Beweis vor "fertig", Debugging
+
+# --- CLI-Werkzeuge -----------------------------------------------------
+npm|firecrawl-cli|firecrawl|CLI fuer den firecrawl-Skill
+npm|@novamira/cli|novamira|CLI fuer den novamira-Skill (WordPress)
+brew|gh|gh|GitHub CLI: Repos laden, Versionsstaende sichern
+brew|ffmpeg|ffmpeg|Video-Werkzeug fuer den watch-Skill
+brew|yt-dlp|yt-dlp|Video-Downloader fuer den watch-Skill

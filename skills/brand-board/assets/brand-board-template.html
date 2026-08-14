@@ -1,0 +1,231 @@
+<!--
+  BRAND BOARD TEMPLATE (neutral, industry agnostic)
+  Fill from brand-dna.md. Swap every token marked  /* SWAP */ .
+  Rule: no placeholder text left in any section a critic will judge.
+  Self contained: inline all CSS, embed or link the client logo and fonts.
+-->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brand Board, [KUNDE]</title>
+
+<!-- SWAP: link the client fonts here, or embed as @font-face / base64 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  /* ---- BRAND TOKENS, swap all from brand-dna.md ---- */
+  --brand-primary:   #1f3a5f;  /* SWAP primary */
+  --brand-secondary: #d98c3f;  /* SWAP accent, use sparingly */
+  --brand-ink:       #16181d;  /* SWAP darkest text */
+  --brand-muted:     #6b7280;  /* SWAP muted text */
+  --brand-line:      #e4e6eb;  /* SWAP hairline */
+  --brand-surface:   #f6f7f9;  /* SWAP light surface */
+  --brand-paper:     #ffffff;
+
+  --font-head: "Fraunces", Georgia, serif;   /* SWAP headline font */
+  --font-body: "Inter", system-ui, sans-serif; /* SWAP body font */
+
+  --maxw: 1040px;
+  --gap: clamp(2rem, 1.4rem + 3vw, 4rem);
+  --radius: 14px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:var(--font-body);
+  color:var(--brand-ink);
+  background:var(--brand-surface);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.board{max-width:var(--maxw);margin:0 auto;padding:var(--gap) clamp(1.2rem,4vw,3rem)}
+
+/* ---- section rhythm ---- */
+section{
+  background:var(--brand-paper);
+  border:1px solid var(--brand-line);
+  border-radius:var(--radius);
+  padding:clamp(1.6rem,3vw,2.6rem);
+  margin-bottom:1.4rem;
+}
+.eyebrow{
+  font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--brand-muted);margin:0 0 1.1rem;font-weight:600;
+}
+h1,h2,h3{font-family:var(--font-head);margin:0;font-weight:600;letter-spacing:-.01em}
+
+/* ---- masthead ---- */
+.masthead{
+  background:var(--brand-primary);color:#fff;border:none;
+  display:flex;flex-wrap:wrap;align-items:center;gap:2rem;justify-content:space-between;
+}
+.masthead .logo-slot{
+  min-width:200px;min-height:96px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.35);
+  border-radius:10px;padding:1rem 1.6rem;
+}
+.masthead .logo-slot img{max-height:64px;max-width:260px;display:block} /* SWAP: client logo */
+.masthead h1{color:#fff;font-size:clamp(1.8rem,1rem+3vw,3rem)}
+.masthead p{margin:.4rem 0 0;color:rgba(255,255,255,.8);max-width:34ch}
+
+/* ---- color palette ---- */
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:.9rem}
+.swatch{border:1px solid var(--brand-line);border-radius:10px;overflow:hidden}
+.swatch .chip{height:96px}
+.swatch .meta{padding:.7rem .8rem;font-size:.8rem}
+.swatch .meta b{display:block;font-size:.85rem}
+.swatch .meta span{color:var(--brand-muted);font-variant-numeric:tabular-nums}
+
+/* ---- typography specimens ---- */
+.type-grid{display:grid;gap:1.4rem}
+.specimen{border:1px solid var(--brand-line);border-radius:10px;padding:1.4rem 1.6rem}
+.specimen .label{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-muted);margin-bottom:.6rem}
+.specimen .big{font-family:var(--font-head);font-size:clamp(2rem,1rem+4vw,3.4rem);line-height:1.05}
+.specimen .body-sample{font-family:var(--font-body);font-size:1.05rem;max-width:60ch;color:var(--brand-ink)}
+.specimen .scale{display:flex;gap:1.2rem;flex-wrap:wrap;align-items:baseline;margin-top:.9rem;color:var(--brand-muted);font-size:.85rem}
+
+/* ---- imagery ---- */
+.imagery{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem}
+.imagery .frame{aspect-ratio:4/3;border-radius:10px;background:var(--brand-surface);
+  border:1px solid var(--brand-line);display:flex;align-items:center;justify-content:center;
+  color:var(--brand-muted);font-size:.8rem;overflow:hidden}
+.imagery .frame img{width:100%;height:100%;object-fit:cover} /* SWAP: client imagery */
+
+/* ---- tone of voice ---- */
+.tone-tags{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1.2rem}
+.tag{border:1px solid var(--brand-primary);color:var(--brand-primary);
+  border-radius:999px;padding:.35rem .9rem;font-size:.85rem;font-weight:500}
+.tone-do{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.tone-do div{border:1px solid var(--brand-line);border-radius:10px;padding:1rem 1.2rem}
+.tone-do h3{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem;font-family:var(--font-body);font-weight:600}
+.tone-do .do h3{color:var(--brand-primary)}
+.tone-do .dont h3{color:var(--brand-secondary)}
+.quote{font-family:var(--font-head);font-size:1.15rem;color:var(--brand-ink);margin:0}
+
+/* ---- logo usage ---- */
+.logo-usage{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.logo-usage .card{border:1px solid var(--brand-line);border-radius:10px;padding:1.4rem;
+  display:flex;align-items:center;justify-content:center;min-height:120px}
+.logo-usage .on-light{background:#fff}
+.logo-usage .on-dark{background:var(--brand-ink)}
+.logo-usage .on-brand{background:var(--brand-primary)}
+.logo-usage img{max-height:56px;max-width:80%} /* SWAP */
+
+footer{color:var(--brand-muted);font-size:.78rem;text-align:center;padding:2rem 0 .5rem}
+
+@media (max-width:640px){
+  .tone-do,.logo-usage{grid-template-columns:1fr}
+}
+@media print{
+  body{background:#fff}
+  section{break-inside:avoid;border-color:#ddd}
+  .board{max-width:none}
+}
+</style>
+</head>
+<body>
+<main class="board">
+
+  <!-- MASTHEAD -->
+  <section class="masthead">
+    <div class="logo-slot">
+      <!-- SWAP: <img src="logo.svg" alt="[KUNDE] Logo"> -->
+      <span style="color:rgba(255,255,255,.7);font-size:.85rem">Logo, primaer</span>
+    </div>
+    <div>
+      <h1>[KUNDE]</h1>
+      <p>Brand Board, abgeleitet aus Webseite und Markendokumenten. Stand [DATUM].</p>
+    </div>
+  </section>
+
+  <!-- COLOR PALETTE -->
+  <section>
+    <p class="eyebrow">Farbpalette</p>
+    <div class="swatches">
+      <!-- one .swatch per color from brand-dna.md, primary first -->
+      <div class="swatch">
+        <div class="chip" style="background:var(--brand-primary)"></div>
+        <div class="meta"><b>Primaer</b><span>#1F3A5F</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--brand-secondary)"></div>
+        <div class="meta"><b>Akzent</b><span>#D98C3F</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--brand-ink)"></div>
+        <div class="meta"><b>Text</b><span>#16181D</span></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:var(--brand-surface);border-bottom:1px solid var(--brand-line)"></div>
+        <div class="meta"><b>Flaeche</b><span>#F6F7F9</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TYPOGRAPHY -->
+  <section>
+    <p class="eyebrow">Typografie</p>
+    <div class="type-grid">
+      <div class="specimen">
+        <div class="label">Headline, [FONT HEADLINE]</div>
+        <div class="big">Aa Bb Cc</div>
+        <div class="scale"><span>Aa</span> <span>0123456789</span> <span>Gewicht 500, 600</span></div>
+      </div>
+      <div class="specimen">
+        <div class="label">Body, [FONT BODY]</div>
+        <p class="body-sample">Der schnelle braune Fuchs springt ueber den faulen Hund. Fliesstext zeigt Lesbarkeit, Laufweite und Rhythmus der Marke im echten Einsatz.</p>
+        <div class="scale"><span>Regular 400</span> <span>Medium 500</span> <span>Semibold 600</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMAGERY -->
+  <section>
+    <p class="eyebrow">Bildwelt</p>
+    <div class="imagery">
+      <!-- SWAP: 3 to 6 <div class="frame"><img ...></div> from client imagery -->
+      <div class="frame">Bild 1</div>
+      <div class="frame">Bild 2</div>
+      <div class="frame">Bild 3</div>
+      <div class="frame">Bild 4</div>
+    </div>
+    <p style="color:var(--brand-muted);font-size:.85rem;margin:.9rem 0 0">Stil, [ein pruefbarer Satz aus brand-dna.md, z.B. natuerliches Licht, warme Toene, Menschen im Kontext].</p>
+  </section>
+
+  <!-- TONE OF VOICE -->
+  <section>
+    <p class="eyebrow">Tonalitaet</p>
+    <div class="tone-tags">
+      <span class="tag">[Adjektiv 1]</span>
+      <span class="tag">[Adjektiv 2]</span>
+      <span class="tag">[Adjektiv 3]</span>
+      <span class="tag">[Adjektiv 4]</span>
+    </div>
+    <p class="quote">"[echtes Zitat aus Website oder Dokument als Beleg der Stimme]"</p>
+    <div class="tone-do" style="margin-top:1.2rem">
+      <div class="do"><h3>So klingt die Marke</h3>[konkretes Do aus den Quellen]</div>
+      <div class="dont"><h3>So nicht</h3>[konkretes Dont]</div>
+    </div>
+  </section>
+
+  <!-- LOGO USAGE -->
+  <section>
+    <p class="eyebrow">Logo, Einsatz</p>
+    <div class="logo-usage">
+      <div class="card on-light"><span style="color:var(--brand-muted);font-size:.8rem">auf Weiss</span></div>
+      <div class="card on-dark"><span style="color:#fff;font-size:.8rem">auf Dunkel</span></div>
+      <div class="card on-brand"><span style="color:#fff;font-size:.8rem">auf Markenfarbe</span></div>
+      <div class="card on-light"><span style="color:var(--brand-muted);font-size:.8rem">Mindestgroesse, Schutzraum</span></div>
+    </div>
+  </section>
+
+  <footer>Brand Board [KUNDE], erstellt mit dem Brand Board Loop. Quellen, Webseite und Markendokumente.</footer>
+
+</main>
+</body>
+</html>

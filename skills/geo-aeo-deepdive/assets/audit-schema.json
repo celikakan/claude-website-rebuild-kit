@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GEO-AEO Audit Input Schema",
+  "description": "Canonical structure for an audit document parsed by parse_audit.py and consumed by generate_report.py. Optional fields can be omitted; required fields must be populated by the parser.",
+  "type": "object",
+  "required": ["meta", "scores", "findings"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["audit_name", "audit_date", "target_domain"],
+      "properties": {
+        "audit_name": { "type": "string" },
+        "audit_date": { "type": "string", "format": "date" },
+        "target_domain": { "type": "string" },
+        "industry": { "type": "string" },
+        "language": { "type": "string", "default": "de" },
+        "pages_analyzed": { "type": "integer" },
+        "auditor": { "type": "string" }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "required": ["seo", "geo", "aeo"],
+      "properties": {
+        "seo": {
+          "type": "object",
+          "properties": {
+            "overall": { "type": "integer", "minimum": 0, "maximum": 100 },
+            "technical": { "type": "integer" },
+            "onpage": { "type": "integer" },
+            "content": { "type": "integer" },
+            "schema": { "type": "integer" },
+            "cwv": { "type": "integer" },
+            "images": { "type": "integer" },
+            "ai_readiness": { "type": "integer" }
+          }
+        },
+        "geo": {
+          "type": "object",
+          "properties": {
+            "overall": { "type": "integer" },
+            "ai_citability": { "type": "integer" },
+            "brand_authority": { "type": "integer" },
+            "content_eeat": { "type": "integer" },
+            "technical_geo": { "type": "integer" },
+            "schema": { "type": "integer" },
+            "platform_optimization": { "type": "integer" }
+          }
+        },
+        "aeo": {
+          "type": "object",
+          "properties": {
+            "overall": { "type": "integer" },
+            "crawler_access": { "type": "integer" },
+            "entity_clarity": { "type": "integer" },
+            "content_structure": { "type": "integer" },
+            "schema_aeo": { "type": "integer" },
+            "featured_snippet": { "type": "integer" },
+            "voice_search": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["severity", "category", "title", "description"],
+        "properties": {
+          "id": { "type": "string" },
+          "severity": { "enum": ["KRITISCH", "HOCH", "MITTEL", "NIEDRIG"] },
+          "category": {
+            "enum": [
+              "SEO_TECHNICAL", "SEO_ONPAGE", "SEO_CONTENT",
+              "GEO_SCHEMA", "GEO_ENTITY", "GEO_PLATFORM",
+              "AEO_CRAWLER", "AEO_STRUCTURE", "AEO_VOICE",
+              "OFFPAGE", "LOCAL", "PERFORMANCE", "KEYWORD", "CONTENT"
+            ]
+          },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "affected_pages": { "type": "array", "items": { "type": "string" } },
+          "current_state": { "type": "string" },
+          "audit_recommendation": { "type": "string" }
+        }
+      }
+    },
+    "platform_readiness": {
+      "type": "object",
+      "properties": {
+        "google_aio": { "type": "integer" },
+        "chatgpt": { "type": "integer" },
+        "perplexity": { "type": "integer" },
+        "gemini": { "type": "integer" },
+        "copilot": { "type": "integer" }
+      }
+    },
+    "crawler_access": {
+      "type": "object",
+      "properties": {
+        "gptbot": { "enum": ["ALLOWED", "BLOCKED", "UNKNOWN"] },
+        "claudebot": { "enum": ["ALLOWED", "BLOCKED", "UNKNOWN"] },
+        "perplexitybot": { "enum": ["ALLOWED", "BLOCKED", "UNKNOWN"] },
+        "googlebot": { "enum": ["ALLOWED", "BLOCKED", "UNKNOWN"] },
+        "llms_txt": { "enum": ["MISSING", "PRESENT", "STANDARD_COMPLIANT"] }
+      }
+    },
+    "detected_stack": {
+      "type": "object",
+      "description": "Stack signals extracted from the audit. Used to tailor step-by-step instructions. Defaults to UNKNOWN when not detectable.",
+      "properties": {
+        "cms": { "enum": ["WORDPRESS", "SHOPIFY", "WEBFLOW", "CUSTOM", "UNKNOWN"], "default": "UNKNOWN" },
+        "seo_plugin": { "enum": ["YOAST", "YOAST_PREMIUM", "RANK_MATH", "AIOSEO", "NONE", "UNKNOWN"], "default": "UNKNOWN" },
+        "schema_plugin": { "enum": ["SASWP", "SCHEMA_PRO", "MANUAL", "NONE", "UNKNOWN"], "default": "UNKNOWN" },
+        "page_builder": { "enum": ["ELEMENTOR", "GUTENBERG", "DIVI", "WPBAKERY", "NONE", "UNKNOWN"], "default": "UNKNOWN" },
+        "analytics": {
+          "type": "array",
+          "items": { "enum": ["GA4", "GTM", "CLARITY", "MATOMO", "PLAUSIBLE", "FATHOM", "NONE"] }
+        },
+        "hosting": { "enum": ["APACHE", "NGINX", "CLOUDFLARE", "VERCEL", "NETLIFY", "UNKNOWN"], "default": "UNKNOWN" }
+      }
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "keyword": { "type": "string" },
+          "volume_monthly": { "type": "integer" },
+          "difficulty": { "type": "integer" },
+          "zone": { "enum": ["SWEET_SPOT", "AMBITIONIERT", "UNREALISTISCH", "BRAND", "NISCHE", "LOCAL"] },
+          "current_position": { "type": "integer" },
+          "intent": { "enum": ["INFORMATIONAL", "COMMERCIAL", "TRANSACTIONAL", "NAVIGATIONAL", "LOCAL"] }
+        }
+      }
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "enum": ["DIRECT", "INDIRECT"] },
+          "country": { "type": "string" },
+          "seo_score": { "type": "integer" },
+          "has_llms_txt": { "type": "boolean" },
+          "ai_visibility": { "enum": ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] }
+        }
+      }
+    },
+    "offpage": {
+      "type": "object",
+      "properties": {
+        "wikipedia_entry": { "type": "boolean" },
+        "wikidata_entry": { "type": "boolean" },
+        "reddit_presence": { "type": "boolean" },
+        "quora_presence": { "type": "boolean" },
+        "youtube_presence": { "type": "boolean" },
+        "linkedin_presence": { "type": "boolean" },
+        "social_profiles_count": { "type": "integer" },
+        "press_mentions": { "enum": ["NONE", "FEW", "MANY"] },
+        "english_content_present": { "type": "boolean" }
+      }
+    },
+    "existing_actionplan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "priority": { "enum": ["KRITISCH", "HOCH", "MITTEL", "NIEDRIG"] },
+          "timeframe": { "type": "string" },
+          "title": { "type": "string" },
+          "effort_hours": { "type": "number" }
+        }
+      }
+    },
+    "test_prompts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "prompt": { "type": "string" },
+          "target_check": { "type": "string" },
+          "baseline_score": { "type": "number" }
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": { "type": "string" },
+          "title_length": { "type": "integer" },
+          "h1_present": { "type": "boolean" },
+          "meta_description_present": { "type": "boolean" },
+          "schema_types": { "type": "array", "items": { "type": "string" } },
+          "aeo_score": { "type": "integer" },
+          "priority": { "enum": ["KRITISCH", "HOCH", "MITTEL", "NIEDRIG"] }
+        }
+      }
+    }
+  }
+}

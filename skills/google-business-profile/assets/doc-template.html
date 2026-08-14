@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TITLE_PLACEHOLDER</title>
+<style>
+  :root{
+    --ink:#1b1a17; --ink-soft:#4a463f; --line:#ded6c8;
+    --paper:#faf7f1; --card:#fffdf9; --accent:#8a5a2b; --accent-soft:#f0e4d4;
+    --ok:#2f6b4f; --warn:#9a6a12; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --ink:#ece7dd; --ink-soft:#b3aa9b; --line:#3a352d; --paper:#14130f;
+      --card:#1c1a16; --accent:#d9a066; --accent-soft:#2a231a; --ok:#7fc0a0; --warn:#d9b25f; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;line-height:1.6}
+  header{padding:clamp(2rem,6vw,5rem) clamp(1rem,5vw,4rem) 2rem;border-bottom:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+  h1{font-size:clamp(1.8rem,4.5vw,3.2rem);line-height:1.08;margin:.4em 0 .2em;font-weight:600}
+  .lede{color:var(--ink-soft);max-width:64ch;font-size:1.05rem}
+  main{padding:0 clamp(1rem,5vw,4rem) 6rem;max-width:78rem;margin:0 auto}
+  section{padding-top:3rem}
+  h2{font-size:clamp(1.3rem,2.6vw,1.9rem);margin:0 0 .2em;font-weight:600}
+  h2 .num{font-family:var(--mono);font-size:.7em;color:var(--accent);margin-right:.6em}
+  h3{font-size:1.02rem;margin:1.5rem 0 .4rem;font-weight:600}
+  p{max-width:72ch}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:2px;padding:1.1rem 1.2rem;margin:.9rem 0}
+  .grid{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr))}
+  table{border-collapse:collapse;width:100%;font-size:.94rem}
+  .scroll{overflow-x:auto}
+  th,td{text-align:left;padding:.55rem .7rem;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+  code{font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:.05em .3em}
+  .copyblock{position:relative;background:var(--accent-soft);border:1px solid var(--line);
+    padding:1rem 1.1rem;white-space:pre-wrap;font-size:.93rem;border-radius:2px}
+  .copyblock.code{background:var(--card);white-space:pre;overflow-x:auto;
+    font-family:var(--mono);font-size:.78rem;line-height:1.5}
+  .copy{position:absolute;top:.5rem;right:.5rem;font-family:var(--mono);font-size:.66rem;
+    letter-spacing:.08em;text-transform:uppercase;background:var(--card);color:var(--ink);
+    border:1px solid var(--line);padding:.3rem .55rem;cursor:pointer;border-radius:2px}
+  .copy:hover{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+  .count{font-family:var(--mono);font-size:.72rem;color:var(--ink-soft);margin-top:.35rem}
+  .count.over{color:#b3261e;font-weight:700}
+  ul,ol{max-width:72ch;padding-left:1.1rem} li{margin:.25rem 0}
+  .todo{background:var(--accent-soft);border-bottom:1px dashed var(--accent);padding:0 .25em}
+  .tag{display:inline-block;font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;
+    text-transform:uppercase;border:1px solid var(--line);padding:.15rem .45rem;color:var(--ink-soft)}
+  .tag.p1{border-color:var(--accent);color:var(--accent)}
+  .tag.auto{border-color:var(--ok);color:var(--ok)}
+  .tag.gate{border-color:#b3261e;color:#b3261e}
+  .note{border-left:3px solid var(--warn);padding-left:1rem;color:var(--ink-soft)}
+  .yes{color:var(--ok);font-weight:700} .no{color:#b3261e;font-weight:700}
+  footer{border-top:1px solid var(--line);padding:2rem clamp(1rem,5vw,4rem);color:var(--ink-soft);font-size:.85rem}
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">KICKER_PLACEHOLDER</div>
+  <h1>H1_PLACEHOLDER</h1>
+  <p class="lede">LEDE_PLACEHOLDER</p>
+</header>
+
+<main>
+<!-- SECTIONS_PLACEHOLDER
+Section pattern:
+<section>
+  <h2><span class="num">01</span>Titel</h2>
+  ...
+  <div class="copyblock" id="unique-id" data-max="750">Paste-ready text</div>
+  <div class="count" data-for="unique-id" data-max="750"></div>
+</section>
+Mark every unconfirmed value: <span class="todo">value?</span>
+-->
+</main>
+
+<footer>FOOTER_PLACEHOLDER (data sources + retrieval date)</footer>
+
+<script>
+  document.querySelectorAll('.copyblock').forEach(function (block) {
+    var text = block.textContent.trim();   // read before adding the button, else "Kopieren" travels along
+    block.dataset.text = text;
+    var btn = document.createElement('button');
+    btn.className = 'copy';
+    btn.textContent = 'Kopieren';
+    btn.onclick = function () {
+      navigator.clipboard.writeText(text);
+      btn.textContent = 'Kopiert';
+      setTimeout(function () { btn.textContent = 'Kopieren'; }, 1500);
+    };
+    block.appendChild(btn);
+  });
+  // live character counters against the Google limits
+  document.querySelectorAll('.count').forEach(function (el) {
+    var src = document.getElementById(el.dataset.for);
+    if (!src) return;
+    var max = Number(el.dataset.max);
+    var n = src.dataset.text.length;
+    el.textContent = n + ' / ' + max + ' Zeichen';
+    if (n > max) el.classList.add('over');
+  });
+</script>
+</body>
+</html>

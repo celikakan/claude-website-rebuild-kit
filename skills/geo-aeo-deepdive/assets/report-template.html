@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GEO/AEO Action Report — {{ TARGET_DOMAIN }}</title>
+<style>
+  :root {
+    --bg: #0d0f12;
+    --panel: #15181d;
+    --panel-2: #1c2026;
+    --text: #e9edf2;
+    --muted: #97a0ad;
+    --accent: #ffd400;
+    --accent-2: #ffb800;
+    --critical: #ff5562;
+    --high: #ffa15c;
+    --medium: #ffd87a;
+    --low: #8be0b0;
+    --line: #2a2f37;
+    --code: #0a0c10;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; line-height: 1.55; margin: 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 28px 80px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 14px 28px; background: var(--accent); color: #111; font-weight: 600; }
+  header.top .brand { font-size: 14px; }
+  h1 { font-size: 30px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  h2 { font-size: 22px; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  h3 { font-size: 17px; margin: 24px 0 10px; color: var(--accent); }
+  h4 { font-size: 15px; margin: 16px 0 6px; }
+  p { margin: 8px 0 14px; }
+  ul, ol { margin: 8px 0 14px; padding-left: 20px; }
+  li { margin: 4px 0; }
+  code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; }
+  pre { background: var(--code); padding: 14px 16px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--line); }
+  .meta-row { display: flex; gap: 18px; flex-wrap: wrap; margin: 10px 0 24px; color: var(--muted); font-size: 14px; }
+  .meta-row span { padding: 4px 10px; background: var(--panel); border-radius: 999px; border: 1px solid var(--line); }
+
+  /* Scoreboard */
+  .scoreboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 16px 0 32px; }
+  .score-card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .score-card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .score-card .value { font-size: 32px; font-weight: 700; margin-top: 6px; }
+  .score-card .grade { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* Sections */
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; margin-bottom: 22px; }
+  .summary-block { background: var(--panel-2); border-left: 3px solid var(--accent); padding: 16px 18px; border-radius: 0 8px 8px 0; margin: 14px 0; }
+
+  /* Measure cards */
+  .measure { background: var(--panel-2); border: 1px solid var(--line); border-left: 4px solid var(--medium); border-radius: 8px; padding: 14px 16px; margin: 14px 0; }
+  .measure.kritisch { border-left-color: var(--critical); }
+  .measure.hoch { border-left-color: var(--high); }
+  .measure.mittel { border-left-color: var(--medium); }
+  .measure.niedrig { border-left-color: var(--low); }
+  .measure .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; font-size: 13px; }
+  .pill { padding: 2px 8px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+  .pill.kritisch { background: rgba(255,85,98,0.12); color: var(--critical); border-color: rgba(255,85,98,0.35); }
+  .pill.hoch { background: rgba(255,161,92,0.12); color: var(--high); border-color: rgba(255,161,92,0.35); }
+  .pill.mittel { background: rgba(255,216,122,0.12); color: var(--medium); border-color: rgba(255,216,122,0.35); }
+  .pill.niedrig { background: rgba(139,224,176,0.12); color: var(--low); border-color: rgba(139,224,176,0.35); }
+  .pill.augmentation { background: rgba(255,212,0,0.15); color: var(--accent); border-color: rgba(255,212,0,0.4); }
+  .pill.confidence-hoch { background: rgba(139,224,176,0.15); color: var(--low); border-color: rgba(139,224,176,0.4); }
+  .pill.confidence-mittel { background: rgba(255,216,122,0.15); color: var(--medium); border-color: rgba(255,216,122,0.4); }
+  .pill.confidence-niedrig { background: rgba(151,160,173,0.15); color: var(--muted); border-color: rgba(151,160,173,0.4); }
+  .pill.speed { background: rgba(80,140,255,0.12); color: #7eb0ff; border-color: rgba(80,140,255,0.3); }
+  .pill.track { background: rgba(200,140,255,0.12); color: #c79bff; border-color: rgba(200,140,255,0.3); }
+  .pill.platforms { background: rgba(255,212,0,0.08); color: var(--accent-2); border-color: rgba(255,212,0,0.25); }
+  .pill.quickwin { background: var(--accent); color: #111; border-color: var(--accent-2); font-weight: 600; }
+
+  /* Step-by-step */
+  .steps { background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin: 8px 0 18px; }
+  .steps ol { padding-left: 22px; }
+  .steps .tool-tag { display: inline-block; background: var(--accent); color: #111; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+  .steps .validation { color: var(--low); margin-top: 8px; font-size: 13px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  tr:hover { background: var(--panel-2); }
+
+  /* Footer */
+  footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; text-align: center; }
+  a { color: var(--accent-2); }
+</style>
+</head>
+<body>
+<header class="top">
+  <span class="brand">GEO/AEO Action Report</span>
+  <span>{{ TARGET_DOMAIN }} · {{ AUDIT_DATE }}</span>
+</header>
+
+<div class="container">
+
+  <h1>GEO/AEO Action Report</h1>
+  <div class="meta-row">
+    <span>Domain: <strong>{{ TARGET_DOMAIN }}</strong></span>
+    <span>Audit-Basis: {{ AUDIT_NAME }}</span>
+    <span>Stand: {{ AUDIT_DATE }}</span>
+    <span>Branche: {{ INDUSTRY }}</span>
+    <span>Seiten analysiert: {{ PAGES_ANALYZED }}</span>
+  </div>
+
+  <!-- 0. MANAGEMENT SUMMARY -->
+  <!-- 0a. EINFACHE DARSTELLUNG (laienverständlich) -->
+  <section id="management-summary-simple">
+    <h2>0a. Einfache Darstellung</h2>
+    <p style="color: var(--muted); font-size: 13px; margin-top: -8px;">Diese Sektion fasst alles aus 0b in Alltagssprache zusammen — ohne Fachbegriffe, ohne Abkürzungen. Inhaltlich identisch zur technischen Version, nur einfach erklärt.</p>
+    {{ SIMPLE_SUMMARY_HTML }}
+  </section>
+
+  <!-- 0b. TECHNISCHE DARSTELLUNG (Management Summary unverändert) -->
+  <section id="management-summary">
+    <h2>0b. Technische Darstellung — Management Summary</h2>
+
+    <div class="scoreboard">
+      <div class="score-card">
+        <div class="label">SEO Score</div>
+        <div class="value">{{ SEO_OVERALL }}/100</div>
+        <div class="grade">{{ SEO_GRADE }}</div>
+      </div>
+      <div class="score-card">
+        <div class="label">GEO Score</div>
+        <div class="value">{{ GEO_OVERALL }}/100</div>
+        <div class="grade">{{ GEO_GRADE }}</div>
+      </div>
+      <div class="score-card">
+        <div class="label">AEO Score</div>
+        <div class="value">{{ AEO_OVERALL }}/100</div>
+        <div class="grade">{{ AEO_GRADE }}</div>
+      </div>
+      <div class="score-card">
+        <div class="label">Maßnahmen GEO</div>
+        <div class="value">{{ GEO_MEASURE_COUNT }}</div>
+        <div class="grade">davon {{ GEO_KRITISCH_COUNT }} kritisch</div>
+      </div>
+      <div class="score-card">
+        <div class="label">Maßnahmen AEO</div>
+        <div class="value">{{ AEO_MEASURE_COUNT }}</div>
+        <div class="grade">davon {{ AEO_KRITISCH_COUNT }} kritisch</div>
+      </div>
+      <div class="score-card">
+        <div class="label">Step-by-Step</div>
+        <div class="value">{{ STEP_COUNT }}</div>
+        <div class="grade">Anleitungen verfügbar</div>
+      </div>
+      {{ EXTENSION_SCORES_HTML }}
+    </div>
+
+    <h3>Top 3 GEO-Maßnahmen</h3>
+    <ol>{{ TOP_3_GEO_HTML }}</ol>
+
+    <h3>Top 3 AEO-Maßnahmen</h3>
+    <ol>{{ TOP_3_AEO_HTML }}</ol>
+
+    <h3>Erwartete Wirkung</h3>
+    <div class="summary-block">{{ EXPECTED_IMPACT_HTML }}</div>
+
+    <h3>Aufwand & Empfehlung</h3>
+    <p><strong>Geschätzter Aufwand:</strong> {{ EFFORT_RANGE_HOURS }} Stunden über {{ TIMELINE_MONTHS }} Monate.</p>
+    <div class="summary-block">{{ EXECUTIVE_RECOMMENDATION_HTML }}</div>
+  </section>
+
+  <!-- 1. AUDIT INPUT OVERVIEW -->
+  <section id="audit-overview">
+    <h2>1. Audit-Input-Übersicht</h2>
+    <p>Dieser Action Report basiert auf folgender Audit-Grundlage:</p>
+    <ul>
+      <li><strong>Audit-Name:</strong> {{ AUDIT_NAME }}</li>
+      <li><strong>Erstellt am:</strong> {{ AUDIT_DATE }}</li>
+      <li><strong>Auditor:</strong> {{ AUDITOR }}</li>
+      <li><strong>Analysierte Seiten:</strong> {{ PAGES_ANALYZED }}</li>
+      <li><strong>Erkannte Findings:</strong> {{ TOTAL_FINDINGS_COUNT }} ({{ KRITISCH_FINDINGS_COUNT }} kritisch · {{ HOCH_FINDINGS_COUNT }} hoch · {{ MITTEL_FINDINGS_COUNT }} mittel)</li>
+      <li><strong>Erkannter Tech-Stack:</strong> {{ DETECTED_STACK_SUMMARY }}</li>
+    </ul>
+    <h3>Wirkung dieses Reports</h3>
+    <ul>
+      <li>Vertieft {{ DEEPENED_COUNT }} bestehende Audit-Empfehlungen mit Princeton-Evidenz und Plattform-Specifics.</li>
+      <li>Ergänzt {{ AUGMENTATION_COUNT }} Maßnahmen, die der ursprüngliche Audit nicht enthalten hat.</li>
+      <li>Liefert {{ STEP_COUNT }} Schritt-für-Schritt-Anleitungen für direkte Umsetzung.</li>
+    </ul>
+  </section>
+
+  <!-- 2. MARKET CONTEXT -->
+  <section id="market-context">
+    <h2>2. Marktkontext — Warum jetzt</h2>
+    <table>
+      <tr><th>Indikator</th><th>Wert</th><th>Quelle</th></tr>
+      <tr><td>Rückgang traditionelles Suchvolumen bis 2026</td><td>−25 %</td><td>Gartner</td></tr>
+      <tr><td>Wachstum LLM-Referral-Traffic YoY</td><td>+527 %</td><td>Previsible AI Traffic Report 2025</td></tr>
+      <tr><td>Anteil ChatGPT am KI-Referral-Traffic</td><td>87,4 %</td><td>Conductor 2025</td></tr>
+      <tr><td>CTR-Erosion organische Position 1 mit AIO</td><td>−58 %</td><td>SERP-Studie 2025</td></tr>
+      <tr><td>Zero-Click-Anteil aller Suchen</td><td>~60 %</td><td>Marktanalysen 2025</td></tr>
+      <tr><td>Konversionsrate ChatGPT-Traffic</td><td>15,9 % (vs. 1,76 % Google Organic)</td><td>Konversionsanalysen 2025</td></tr>
+      <tr><td>B2B-Käufer mit generativer KI im Buying-Journey 2026</td><td>&gt;90 %</td><td>B2B-Studien 2025–2026</td></tr>
+    </table>
+    <p>Folge für {{ TARGET_DOMAIN }}: Sichtbarkeit verlagert sich von SERPs in geschlossene AI-Antworten. Der Wettbewerb um Sichtbarkeit findet jetzt in 2–6 Zitationen pro KI-Antwort statt — nicht mehr auf Seite 1 der Google-Ergebnisse.</p>
+  </section>
+
+  <!-- 3. GEO MEASURES -->
+  <section id="geo-measures">
+    <h2>3. GEO-Maßnahmen — Detailliert</h2>
+    <p>Generative Engine Optimization adressiert die Sichtbarkeit in KI-generierten Antworten via Content-Modifikation, Entitätenarbeit und akademisch fundierten Tactics (Princeton KDD 2024).</p>
+    {{ GEO_MEASURES_HTML }}
+
+    <!-- 3a. LLM VISIBILITY QUICK WINS -->
+    <h3 style="margin-top: 32px;">3a. LLM Visibility Quick Wins</h3>
+    <p style="color: var(--muted); font-size: 13px;">Maßnahmen mit geringem Aufwand, hoher Retrieval-Wirkung und schneller LLM-Sichtbarkeit. Max. 10 Einträge, priorisiert nach Visibility Confidence + Aufwand.</p>
+    {{ QUICKWINS_HTML }}
+
+    <!-- 3b. LLM VISIBILITY BLOCKERS -->
+    <h3 style="margin-top: 32px;">3b. LLM Visibility Blockers</h3>
+    <p style="color: var(--muted); font-size: 13px;">Inhalte, die Retrieval verhindern: Marketing-Sprache, lange Einleitungen, fehlende Definitionen, semantisches Rauschen. Diese Maßnahmen entfernen Hindernisse — sie fügen nichts hinzu, sie räumen auf.</p>
+    {{ BLOCKERS_HTML }}
+  </section>
+
+  <!-- 4. AEO MEASURES -->
+  <section id="aeo-measures">
+    <h2>4. AEO-Maßnahmen — Detailliert</h2>
+    <p>Answer Engine Optimization adressiert die strukturelle Aufbereitung der Site für maschinelle Lesbarkeit: Schema, llms.txt, Answer-First-Format, Crawler-Zugang.</p>
+    {{ AEO_MEASURES_HTML }}
+  </section>
+
+  <!-- 5. PLATFORM STRATEGY -->
+  <section id="platform-strategy">
+    <h2>5. Plattform-Strategie</h2>
+    <p>Jede AI-Plattform groundet Antworten anders. Die folgenden Empfehlungen übersetzen generische Maßnahmen in plattform-spezifische Aktionen.</p>
+
+    <h3>Perplexity AI</h3>
+    {{ PERPLEXITY_STRATEGY_HTML }}
+
+    <h3>Google AI Overviews (Gemini)</h3>
+    {{ GEMINI_STRATEGY_HTML }}
+
+    <h3>ChatGPT (OpenAI)</h3>
+    {{ CHATGPT_STRATEGY_HTML }}
+
+    <h3>Weitere Plattformen</h3>
+    {{ OTHER_PLATFORMS_HTML }}
+  </section>
+
+  <!-- 6. ANTI-PATTERNS -->
+  <section id="anti-patterns">
+    <h2>6. Anti-Patterns — Was nicht tun</h2>
+    <p>Tactics, die der Audit oder gängige SEO-Lehre nahelegt, die aber durch akademische Evidenz oder Industrie-Erfahrung negativ wirken:</p>
+    {{ ANTI_PATTERNS_HTML }}
+  </section>
+
+  <!-- 7. STEP-BY-STEP INSTRUCTIONS -->
+  <section id="step-by-step">
+    <h2>7. Schritt-für-Schritt-Anleitungen</h2>
+    <p>Konkrete Tool-Anleitungen pro Maßnahme. Maßnahmen, die rein strategisch sind (z.B. Originalstudie publizieren), enthalten bewusst keine Schritte und stehen nur in Sektion 3/4.</p>
+
+    <h3>Erkannter Tool-Stack</h3>
+    <ul>
+      <li><strong>CMS:</strong> {{ STACK_CMS }}</li>
+      <li><strong>SEO-Plugin:</strong> {{ STACK_SEO_PLUGIN }}</li>
+      <li><strong>Schema-Plugin:</strong> {{ STACK_SCHEMA_PLUGIN }}</li>
+      <li><strong>Page-Builder:</strong> {{ STACK_PAGE_BUILDER }}</li>
+      <li><strong>Analytics:</strong> {{ STACK_ANALYTICS }}</li>
+      <li><strong>Hosting:</strong> {{ STACK_HOSTING }}</li>
+    </ul>
+    <p><em>Wenn der Stack als UNKNOWN ausgewiesen ist, basieren die Anleitungen auf dem Default WordPress + Yoast + SASWP mit einer Alternative pro Schritt.</em></p>
+
+    {{ STEP_INSTRUCTIONS_HTML }}
+  </section>
+
+  <!-- 8. ACTION PLAN TIMELINE -->
+  <section id="action-plan">
+    <h2>8. Action-Plan Timeline (P0/P1/P2)</h2>
+
+    <h3>P0 — Tag 1–7 (Quick Wins, niedriger Aufwand, hohe Wirkung)</h3>
+    {{ P0_TIMELINE_HTML }}
+
+    <h3>P1 — Woche 2–4 (Schema, Answer-First, Content-Rewrites)</h3>
+    {{ P1_TIMELINE_HTML }}
+
+    <h3>P2 — Monat 2–6 (Strategische Hebel: Listicles, Comparisons, Reddit, Wikipedia, Original Research)</h3>
+    {{ P2_TIMELINE_HTML }}
+  </section>
+
+  <!-- 9. MONITORING SETUP -->
+  <section id="monitoring">
+    <h2>9. Monitoring-Setup</h2>
+
+    <h3>Share-of-Model — Monatliche Test-Prompts</h3>
+    <p>Führe diese Prompts monatlich in ChatGPT, Perplexity und Gemini durch. Erfasse für jeden Prompt: Wird {{ TARGET_DOMAIN }} als Quelle genannt? Wird die Marke positiv im Antworttext erwähnt?</p>
+    {{ TEST_PROMPTS_TABLE_HTML }}
+
+    <h3>Citation-Score-Formel</h3>
+    <pre>Citation Score = (Prompts mit Domain-Zitat / Gesamt-Prompts) × 100
+Brand Mention Score = (Prompts mit Marken-Erwähnung / Gesamt-Prompts) × 100
+Share of Model = Durchschnitt aus Citation Score + Brand Mention Score, je Plattform</pre>
+
+    <h3>Ziel-Trajektorie</h3>
+    <table>
+      <tr><th>Monat</th><th>Citation Score Ziel</th><th>Beschreibung</th></tr>
+      <tr><td>0 (Baseline)</td><td>~0–10 %</td><td>Vor Umsetzung</td></tr>
+      <tr><td>3</td><td>&gt;30 %</td><td>P0 + P1 abgeschlossen</td></tr>
+      <tr><td>6</td><td>&gt;55 %</td><td>Schema + Answer-First live</td></tr>
+      <tr><td>12</td><td>&gt;70 %</td><td>Voller Plattform-Ausbau</td></tr>
+    </table>
+
+    <h3>GA4 AI-Referral-Tracking</h3>
+    <p>Erstelle in GA4 eine Custom Channel Group "AI Search":</p>
+    <pre>Bedingung: Session source contains "perplexity.ai" OR "chat.openai.com"
+                              OR "gemini.google.com" OR "copilot.microsoft.com"
+Pfad: GA4 → Admin → Channel Groups → Create</pre>
+
+    <h3>Monatlicher Optimierungs-Zyklus</h3>
+    <ol>
+      <li>Woche 1: Test-Prompts in ChatGPT/Perplexity/Gemini durchführen, Citation-Score erfassen.</li>
+      <li>Woche 2: GA4-AI-Traffic-Report auswerten — welche Seiten werden referenziert?</li>
+      <li>Woche 3: Schwache Seiten identifizieren — Content-Update planen (Answer-First + Princeton-Tactic).</li>
+      <li>Woche 4: 1–2 neue oder optimierte Inhalte publizieren, in den nächsten Zyklus mitnehmen.</li>
+    </ol>
+  </section>
+
+  <footer>
+    <p>Generiert vom Skill <strong>geo-aeo-deepdive</strong>. Eingabe: {{ AUDIT_NAME }} ({{ AUDIT_DATE }}). Ausgabe: {{ REPORT_GENERATED_AT }}.</p>
+    <p>Quellen: Princeton/Georgia Tech/IIT Delhi/AI2 (GEO: Generative Engine Optimization, KDD 2024) · Gartner · Conductor · Pew Research Center · Previsible · llmstxt.org.</p>
+  </footer>
+
+</div>
+</body>
+</html>
