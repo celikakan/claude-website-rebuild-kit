@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Website-Rebuild Kit</title>
+<style>
+  /* Design nach Vorlage "ai-task-list": Karten, Checkbox-Reihen mit
+     gezeichnetem Haken, tabellarische Zaehler. Jede Phase hat eine eigene
+     Akzentfarbe (--pc) fuer klare visuelle Trennung. */
+  :root{
+    --gold:#a47f49; --gold-soft:#c9a86e;
+    --foreground:#18181b; --muted:#71717a;
+    --background:#fafaf9; --card:#ffffff; --border:#e4e4e7;
+    --code:#f4f4f5;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--background); color:var(--foreground); line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:840px;margin:0 auto;padding:0 24px 72px}
+  code{font-family:"SF Mono",Menlo,Consolas,monospace}
+
+  /* Kopf */
+  header{padding:52px 0 36px;border-bottom:4px solid var(--gold)}
+  .brand{font-size:12px;letter-spacing:.28em;color:var(--gold);font-weight:700;text-transform:uppercase}
+  h1{font-size:clamp(30px,5vw,46px);font-weight:800;letter-spacing:-.02em;margin:12px 0 10px;line-height:1.12}
+  .sub{font-size:16px;color:var(--muted);max-width:620px}
+
+  /* Sektions-Ueberschrift: gross, farbig, mit Zaehler-Badge rechts */
+  section{margin-top:56px}
+  .sec-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    border-bottom:3px solid var(--sc,var(--gold));padding-bottom:10px;margin-bottom:8px;
+  }
+  .sec-head h2{font-size:26px;font-weight:800;letter-spacing:-.015em;color:var(--sc,var(--gold))}
+  .sec-head .count{
+    font-size:12.5px;font-weight:700;color:var(--sc,var(--gold));
+    background:color-mix(in srgb, var(--sc,var(--gold)) 12%, white);
+    border:1px solid color-mix(in srgb, var(--sc,var(--gold)) 30%, white);
+    padding:4px 12px;border-radius:999px;white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+  .lead{font-size:14.5px;color:var(--muted);margin:10px 0 18px;max-width:620px}
+
+  /* Install-Box */
+  .install{background:var(--foreground);color:#fafafa;border-radius:12px;padding:20px 22px;margin:16px 0 8px}
+  .install .lbl{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-soft);font-weight:700;margin-bottom:8px}
+  .install code{display:block;font-size:13px;word-break:break-all;line-height:1.5;color:#fff}
+  .hint{font-size:13.5px;color:var(--muted);margin-top:10px}
+  .hint a{color:var(--gold);font-weight:600;text-decoration:none}
+  .hint a:hover{text-decoration:underline}
+  .hint code{background:var(--code);padding:2px 6px;border-radius:5px;font-size:12.5px;color:var(--foreground)}
+
+  /* Phasen-Karte: farbiger Top-Balken + farbiger Nummern-Chip */
+  .plan{
+    background:var(--card);border:1px solid var(--border);border-radius:12px;
+    border-top:4px solid var(--pc,var(--gold));
+    padding:16px 18px;margin-top:18px;
+  }
+  .plan-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
+  .plan-head .phase-label{display:flex;align-items:center;gap:12px;font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .plan-head .no{
+    flex:0 0 auto;width:30px;height:30px;border-radius:8px;
+    background:var(--pc,var(--gold));color:#fff;font-size:15px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;
+  }
+  .plan-head .note{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .plan .desc{font-size:13.5px;color:var(--muted);margin:4px 0 10px;max-width:600px}
+
+  /* Task-Reihe: Checkbox + Label + Quelle rechts */
+  .task{display:flex;align-items:flex-start;gap:8px;padding:5px 0;list-style:none}
+  .task .box{flex:0 0 auto;margin-top:3px;width:14px;height:14px}
+  .task .label{min-width:0;flex:1;font-size:14px;line-height:1.45}
+  .task .label code{font-size:13px;font-weight:700}
+  .task .label .what{color:var(--muted);font-size:13.5px}
+  .task .src{flex:0 0 auto;font-size:12px;margin-top:2px;max-width:36%;text-align:right}
+  .task .src a{color:var(--pc,var(--gold));font-weight:600;text-decoration:none}
+  .task .src a:hover{text-decoration:underline}
+  .task .src .kit{color:var(--muted);font-weight:600}
+  .subhead{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pc,var(--gold));margin:10px 0 2px}
+
+  /* Checkbox in Phasenfarbe, Haken zeichnet sich beim Laden */
+  .box rect{fill:var(--pc,var(--gold));fill-opacity:.12;stroke:var(--pc,var(--gold));stroke-width:1.4}
+  .box path{
+    fill:none;stroke:var(--pc,var(--gold));stroke-width:1.8;
+    stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:1 1;stroke-dashoffset:0;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .box path{animation:draw 260ms cubic-bezier(0.23,1,0.32,1) both}
+    .plan:nth-of-type(2) .box path{animation-delay:60ms}
+    .plan:nth-of-type(3) .box path{animation-delay:120ms}
+    .plan:nth-of-type(4) .box path{animation-delay:180ms}
+    .plan:nth-of-type(5) .box path{animation-delay:240ms}
+    .plan:nth-of-type(6) .box path{animation-delay:300ms}
+    .plan:nth-of-type(7) .box path{animation-delay:360ms}
+  }
+  @keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+
+  /* Beispiel-Karten "Was sind Skills" */
+  .ex-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-top:14px}
+  .ex{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .ex .ex-no{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sc,var(--gold));margin-bottom:6px}
+  .ex .cmd{display:inline-block;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;font-weight:700;background:var(--foreground);color:#fff;padding:4px 10px;border-radius:7px;margin-bottom:8px}
+  .ex p{font-size:13.5px;color:var(--muted);line-height:1.55}
+  .ex p strong{color:var(--foreground)}
+  .prose{font-size:14.5px;max-width:660px;margin-top:10px}
+  .prose p{margin-bottom:10px}
+  .prose strong{font-weight:700}
+
+  /* Merkzettel */
+  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th{text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:10px 16px;border-bottom:1px solid var(--border);font-weight:600}
+  td{padding:10px 16px;border-top:1px solid var(--border);font-size:14px}
+  tr:first-child td{border-top:none}
+  td code{font-size:12.5px;background:var(--code);padding:2px 8px;border-radius:6px}
+
+  footer{margin-top:64px;padding-top:22px;border-top:4px solid var(--gold);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:14px}
+  footer .who{font-weight:800}
+  footer .site{color:var(--gold);font-weight:700}
+
+  @media print{
+    body{background:#fff}
+    .page{max-width:100%;padding:0 6mm}
+    .plan{break-inside:avoid}
+    a{color:inherit}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <img src="data:image/jpeg;base64,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" alt="Der-Ki-Berater.at" style="display:block;max-width:440px;width:100%;height:auto;border-radius:10px">
+  <h1>Website-Rebuild mit Claude&nbsp;Code: Der komplette Leitfaden</h1>
+  <p class="sub">Ihre Webseite, neu gebaut: alle Inhalte bleiben, das Design wird modern.
+  Von der Einrichtung über 37 Skills bis zum Livegang auf WordPress, mit einem
+  Installations-Befehl und Ihrer Freigabe an jedem wichtigen Punkt.</p>
+</header>
+
+<section style="--sc:#38708c">
+  <div class="sec-head"><h2>Manuelle Installation</h2><span class="count">einmalig, 4 Schritte</span></div>
+  <p class="lead">Die Grundausstattung, falls noch nicht vorhanden: VS Code als Arbeitsumgebung
+  und Claude Code als KI-Werkzeug darin. Einmal einrichten, dann nie wieder.</p>
+  <div class="plan" style="--pc:#38708c;border-top:none;margin-top:8px">
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>1. VS Code installieren</strong> <span class="what">Kostenloser Editor von Microsoft, herunterladen und installieren wie jedes Programm.</span></span>
+        <span class="src"><a href="https://code.visualstudio.com">code.visualstudio.com</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>2. Node.js installieren</strong> <span class="what">Wird von mehreren Werkzeugen gebraucht, die LTS-Version wählen.</span></span>
+        <span class="src"><a href="https://nodejs.org">nodejs.org</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>3. Claude Code installieren</strong> <span class="what">Im Terminal ausführen: <code style="background:var(--code);padding:2px 6px;border-radius:5px">npm install -g @anthropic-ai/claude-code</code>, danach einmal <code style="background:var(--code);padding:2px 6px;border-radius:5px">claude</code> tippen und mit Ihrem Claude-Konto anmelden.</span></span>
+        <span class="src"><a href="https://claude.com/claude-code">claude.com/claude-code</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>4. Claude-Code-Extension in VS Code</strong> <span class="what">In VS Code links auf das Extensions-Symbol klicken, "Claude Code" (von Anthropic) suchen und installieren. Damit läuft Claude direkt im Editor.</span></span>
+        <span class="src"><a href="https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code">VS Code Marketplace</a></span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section style="--sc:#b0713a">
+  <div class="sec-head"><h2>Ein Projekt starten</h2><span class="count">pro Projekt, 4 Schritte</span></div>
+  <p class="lead">So beginnt jede Arbeit: jedes Kundenprojekt bekommt seinen eigenen Ordner,
+  und Claude Code wird IN diesem Ordner gestartet. Dauert eine Minute.</p>
+  <div class="plan" style="--pc:#b0713a;border-top:none;margin-top:8px">
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>1. VS Code öffnen</strong> <span class="what">und im Menü <em>Datei &gt; Ordner öffnen</em> wählen.</span></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>2. Neuen Projektordner anlegen</strong> <span class="what">im Dialog auf <em>Neuer Ordner</em> klicken, sprechend benennen, z.B. <code style="background:var(--code);padding:2px 6px;border-radius:5px">website-rebuild-firmenname</code>, dann öffnen.</span></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>3. Claude Code Extension öffnen</strong> <span class="what">auf das Claude-Symbol in der Seitenleiste klicken, das Claude-Panel öffnet sich. Hier arbeiten Sie ab jetzt.</span></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>4. Loslegen</strong> <span class="what">Claude arbeitet automatisch in diesem Projektordner und liest dessen CLAUDE.md (nächste Sektion). Erste Anweisung eintippen, fertig.</span></span>
+      </li>
+    </ul>
+  </div>
+  <div class="install" style="margin-top:14px">
+    <div class="lbl">So ist Ihr Arbeitsplatz aufgebaut</div>
+    <code style="white-space:pre">┌─────────────────────────────────────────────────┐
+│ VS Code                                         │
+│ ┌─────────────┐  ┌────────────────────────────┐ │
+│ │ EXPLORER    │  │ CLAUDE CODE (Extension)    │ │
+│ │             │  │                            │ │
+│ │ Dateiliste  │  │ Hier arbeiten Sie:         │ │
+│ │ des Projekts│  │ Anweisungen in normaler    │ │
+│ │             │  │ Sprache oder /befehle.     │ │
+│ │ CLAUDE.md   │  │                            │ │
+│ │ index.html  │  │ Claude antwortet, baut     │ │
+│ │ ...         │  │ und fragt vor Aenderungen  │ │
+│ │             │  │ um Ihre Freigabe.          │ │
+│ └─────────────┘  └────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────┐ │
+│ │ TERMINAL: nur fuer manche Installationen    │ │
+│ │ (z.B. den Install-Befehl des Skill-Kits)    │ │
+│ └─────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────┘</code>
+  </div>
+  <div class="prose" style="margin-top:14px">
+    <p><strong>Die Systematik in 3 Sätzen:</strong>
+    1. Sie geben Ihre <strong>Anweisungen im Claude-Code-Panel</strong> ein, in normaler
+    Sprache oder per /befehl. 2. Claude erstellt und ändert daraufhin <strong>Dateien im
+    Projektordner</strong>, links im Explorer sehen Sie jede neue Datei erscheinen, und vor
+    Änderungen fragt Claude um Ihre Freigabe. 3. Das <strong>Ergebnis prüfen</strong> Sie im
+    Browser: sagen Sie Claude einfach "öffne die Seite im Browser", oder nutzen Sie
+    /webapp-testing für den automatischen Test. Sie programmieren nie selbst, Sie geben
+    Anweisungen, geben frei und prüfen Ergebnisse.</p>
+    <p><strong>Und das Terminal?</strong> Manche Installationen müssen im Terminal erfolgen,
+    deshalb ist dieser Bereich nur dann wichtig. Öffnen: Menü <em>Terminal &gt; Neues Terminal</em>.</p>
+  </div>
+</section>
+
+<section style="--sc:#4e8a5e">
+  <div class="sec-head"><h2>CLAUDE.md erstellen</h2><span class="count">das Projektgedächtnis</span></div>
+  <div class="prose">
+    <p>Die <strong>CLAUDE.md</strong> ist das Gedächtnis Ihres Projekts: eine Textdatei im
+    Projektordner, die Claude Code bei jedem Start automatisch liest. Ohne sie startet Claude
+    jedes Mal bei null und muss das Projekt neu erkunden. Mit ihr weiß es sofort, welche
+    Technik im Einsatz ist, welche Befehle gelten und welche Regeln einzuhalten sind,
+    wie ein <strong>Einarbeitungs-Dokument für einen neuen Mitarbeiter</strong>.</p>
+    <p style="background:color-mix(in srgb, #4e8a5e 10%, white);border:1px solid color-mix(in srgb, #4e8a5e 30%, white);border-radius:10px;padding:12px 16px">
+    <strong>Grundregel: Jedes Projekt hat seine EIGENE CLAUDE.md</strong>, im jeweiligen
+    Projektordner. Dazu gibt es genau EINE persönliche CLAUDE.md, die für Sie in allen
+    Projekten gilt. So sieht das auf Ihrem Rechner aus:</p>
+  </div>
+  <div class="install" style="margin-top:10px">
+    <div class="lbl">So liegen die Dateien auf Ihrem Computer</div>
+    <code style="white-space:pre">Ihr Computer
+│
+├── ~/.claude/CLAUDE.md              ← 1x persoenlich: Ihre Vorlieben,
+│                                       gilt automatisch in ALLEN Projekten
+│
+└── Projekte/
+    ├── website-kunde-a/
+    │   ├── CLAUDE.md                ← gehoert NUR zu Projekt A
+    │   └── ... (Projektdateien)
+    │
+    └── website-kunde-b/
+        ├── CLAUDE.md                ← gehoert NUR zu Projekt B
+        └── ... (Projektdateien)</code>
+  </div>
+  <div class="prose" style="margin-top:14px">
+    <p>Öffnen Sie Claude Code im Ordner von Projekt A, liest es automatisch die persönliche
+    Datei PLUS die von Projekt A. Projekt B bekommt davon nichts mit. Deshalb: neues
+    Kundenprojekt = neuer Ordner = neue, eigene CLAUDE.md.</p>
+    <p><strong>So entsteht Ihre CLAUDE.md, je nach Ausgangslage:</strong></p>
+    <p><strong>Fall A, Sie starten bei null (leerer Projektordner):</strong> <code style="background:var(--code);padding:2px 6px;border-radius:5px">/init</code>
+    bringt hier nichts, denn es analysiert vorhandene Dateien, und es gibt noch keine.
+    Übernehmen Sie stattdessen das Beispiel unten: sagen Sie Claude einfach
+    <em>"Lege eine CLAUDE.md mit folgendem Inhalt an"</em> und fügen das Beispiel ein
+    (Firmenname anpassen). Fertig.</p>
+    <p><strong>Fall B, das Projekt hat schon Dateien</strong> (z.B. nach Phase 1, wenn Inhalte
+    und Design-Werte gesichert sind, oder bei einem bestehenden Projekt):
+    einmal <code style="background:var(--code);padding:2px 6px;border-radius:5px">/init</code> tippen,
+    Claude analysiert alles Vorhandene und erzeugt die Datei daraus.</p>
+    <p><strong>Wichtig: einmal pro Projekt, nicht pro Sitzung.</strong> Die Datei bleibt im
+    Projektordner liegen und Claude Code liest sie danach bei <strong>jedem Start automatisch</strong>.
+    Sie müssen nie wieder etwas eingeben. Gepflegt wird sie nebenbei: nach einer Korrektur
+    einfach "speichere das ins Gedächtnis" sagen (Tipp 1 unten).</p>
+  </div>
+  <div class="install" style="user-select:all;margin-top:14px">
+    <div class="lbl" style="user-select:none">Beispiel: CLAUDE.md für den Website-Rebuild</div>
+    <code style="white-space:pre-wrap"># Projekt: Website-Rebuild firmenname.at
+
+## Technik
+- Statisches HTML/CSS/JS, Ziel-System: WordPress (via novamira)
+- Design-Werte stehen in design-tokens.css und sind verbindlich
+
+## Befehle
+- Lokale Vorschau: index.html im Browser oeffnen
+- Seite testen: /webapp-testing
+
+## Regeln
+- Design-Tokens und Vorlagen-Struktur NIE eigenmaechtig aendern
+- Alle Inhalte kommen vom Original, nichts erfinden
+- Kein "fertig" ohne Beweis (Screenshot oder Test)</code>
+  </div>
+  <div class="prose" style="margin-top:14px">
+    <p><strong>Fürs Team:</strong> die Projekt-CLAUDE.md wird über Git mit dem Team geteilt,
+    so arbeiten alle nach denselben Regeln. In die persönliche Datei unter
+    <code style="background:var(--code);padding:2px 6px;border-radius:5px">~/.claude/CLAUDE.md</code>
+    gehören nur Ihre eigenen Vorlieben (z.B. Sprache, Kommentar-Stil).</p>
+    <p><strong>Drei Profi-Tipps aus dem offiziellen Anthropic-Video:</strong></p>
+    <p>1. Wenn Sie Claude korrigieren mussten, sagen Sie danach <strong>"speichere das ins Gedächtnis"</strong>,
+    dann steht die Regel ab sofort in der CLAUDE.md und gilt dauerhaft.<br>
+    2. Eigene Dokumente einbinden mit dem @-Zeichen: <code style="background:var(--code);padding:2px 6px;border-radius:5px">@docs/anleitung.md</code>.<br>
+    3. <strong>Kompakt halten:</strong> lieber klein starten und nur ergänzen, was Sie wirklich
+    korrigieren mussten. Eine kurze, präzise CLAUDE.md wirkt besser als eine lange.</p>
+    <p class="hint">Quelle: <a href="https://www.youtube.com/watch?v=O0FGCxkHM-U">Anthropic, "The CLAUDE.md file" (YouTube, 3 Min.)</a></p>
+  </div>
+</section>
+
+<section style="--sc:#a47f49">
+  <div class="sec-head"><h2>Installation des Skill-Kits (One-Click Installation)</h2><span class="count">1 Befehl</span></div>
+  <p class="lead">Öffnen Sie das Programm <strong>Terminal</strong>.
+  Mac: Cmd+Leertaste drücken, „Terminal" eintippen, Enter.
+  Windows: Startmenü öffnen, „Git Bash" eintippen, Enter (kommt automatisch mit Git,
+  Download: <a href="https://git-scm.com" style="color:var(--gold);font-weight:600;text-decoration:none">git-scm.com</a>).
+  Dann diese Zeile einfügen und Enter drücken:</p>
+  <div class="install">
+    <div class="lbl">Im Terminal einfügen</div>
+    <code>curl -fsSL https://raw.githubusercontent.com/celikakan/claude-website-rebuild-kit/main/install.sh | bash</code>
+  </div>
+  <p class="hint">Installiert automatisch alle 37 Skills aus diesem Dokument plus die Werkzeuge
+  <code>firecrawl</code>, <code>novamira</code>, <code>gh</code> (GitHub CLI), <code>ffmpeg</code> und <code>yt-dlp</code>, und zeigt am Ende eine Erfolgsliste.
+  Danach Claude Code einmal neu starten.
+  Kit auf GitHub: <a href="https://github.com/celikakan/claude-website-rebuild-kit">github.com/celikakan/claude-website-rebuild-kit</a></p>
+  <p class="hint"><strong>Später erweitern:</strong> neue Skills werden im Kit in der Datei
+  <code>skills-manifest.txt</code> ergänzt (eine Zeile pro Skill).
+  Denselben Befehl erneut ausführen, die Installation aktualisiert sich selbst.</p>
+</section>
+
+<section style="--sc:#7d5ba6">
+  <div class="sec-head"><h2>Was sind Skills?</h2><span class="count">Grundwissen</span></div>
+  <div class="prose">
+    <p>Ein <strong>Skill</strong> ist ein Wissenspaket für Claude Code: eine Anleitung, wie eine
+    bestimmte Aufgabe professionell erledigt wird. Technisch ist es ein kleiner Ordner mit einer
+    Anleitungsdatei, der auf Ihrem Rechner unter <code style="background:var(--code);padding:2px 6px;border-radius:5px">~/.claude/skills/</code> liegt.
+    Man kann sich einen Skill wie eine <strong>Checkliste eines Spezialisten</strong> vorstellen:
+    der SEO-Skill denkt wie ein SEO-Berater, der Design-Skill wie ein Art Director.</p>
+    <p><strong>Wie werden Skills angewendet?</strong> Auf zwei Wegen:</p>
+    <p><strong>1. Automatisch:</strong> Claude erkennt an Ihrer Aufgabe, welcher Skill passt, und
+    wendet ihn selbstständig an. Sagen Sie "mach einen Screenshot von meiner Webseite", nutzt
+    Claude von allein den Playwright-Skill. Sie müssen nichts auswendig wissen.</p>
+    <p><strong>2. Gezielt per Befehl:</strong> Sie tippen einen Schrägstrich und den Skill-Namen,
+    z.B. <code style="background:var(--code);padding:2px 6px;border-radius:5px">/website-rebuild</code>.
+    Damit starten Sie den Skill direkt und zuverlässig. Das ist der empfohlene Weg für die
+    großen Arbeitsschritte in diesem Dokument.</p>
+  </div>
+
+  <div class="ex-grid">
+    <div class="ex">
+      <div class="ex-no">Beispiel 1 &middot; gezielt</div>
+      <span class="cmd">/grill-me</span>
+      <p><strong>Sie tippen:</strong> "/grill-me ich will meine Webseite neu bauen lassen".<br>
+      <strong>Was passiert:</strong> Claude stellt Ihnen der Reihe nach Fragen (Ziel, Zielgruppe,
+      Design-Wünsche, was bleiben muss) und hört erst auf, wenn alle offenen Punkte geklärt sind.
+      Ergebnis: ein sauberer Plan statt Missverständnisse.</p>
+    </div>
+    <div class="ex">
+      <div class="ex-no">Beispiel 2 &middot; automatisch</div>
+      <span class="cmd">superpowers</span>
+      <p><strong>Sie tippen:</strong> nichts, das Plugin läuft immer mit.<br>
+      <strong>Was passiert:</strong> Sagen Sie "baue die Startseite", zwingt superpowers Claude zur
+      Disziplin: erst Fragen klären, dann bauen, und "fertig" gibt es nur mit Beweis (z.B. einem
+      erfolgreichen Test). Schützt vor schnellen, schlampigen Ergebnissen.</p>
+    </div>
+    <div class="ex">
+      <div class="ex-no">Beispiel 3 &middot; automatisch</div>
+      <span class="cmd">playwright-skill</span>
+      <p><strong>Sie tippen:</strong> "Mach einen Screenshot von meiner-seite.at in Handy-Größe".<br>
+      <strong>Was passiert:</strong> Claude öffnet die Seite in einem echten Browser, stellt die
+      Bildschirmgröße ein und speichert den Screenshot. Genauso kann es durch Vorbild-Seiten
+      klicken und deren Aufbau erfassen.</p>
+    </div>
+    <div class="ex">
+      <div class="ex-no">Beispiel 4 &middot; gezielt</div>
+      <span class="cmd">/website-rebuild</span>
+      <p><strong>Sie tippen:</strong> "/website-rebuild".<br>
+      <strong>Was passiert:</strong> Der Haupt-Skill fragt Ihre Webseiten-Adresse und die
+      Design-Vorlage ab und arbeitet dann 9 Schritte ab: Inhalte sichern, Design nachbauen,
+      Seiten zusammensetzen. An 3 Punkten werden Sie um Freigabe gebeten.</p>
+    </div>
+    <div class="ex">
+      <div class="ex-no">Beispiel 5 &middot; gezielt</div>
+      <span class="cmd">/brand-board</span>
+      <p><strong>Sie tippen:</strong> "/brand-board" und geben Ihre Webseite plus Logo/Unterlagen an.<br>
+      <strong>Was passiert:</strong> Claude extrahiert Farben, Schriften und Tonalität und baut
+      daraus ein professionelles Brand Board, die verbindliche Design-Grundlage für den Rebuild.</p>
+    </div>
+    <div class="ex">
+      <div class="ex-no">Beispiel 6 &middot; gezielt</div>
+      <span class="cmd">/seo-aeo-audit</span>
+      <p><strong>Sie tippen:</strong> "/seo-aeo-audit meine-seite.at".<br>
+      <strong>Was passiert:</strong> Claude prüft die Seite in 6 Schritten für Google UND für
+      KI-Suchen (ChatGPT, Perplexity) und liefert einen deutschen Maßnahmenplan mit Prioritäten.</p>
+    </div>
+  </div>
+</section>
+
+<section style="--sc:#18181b">
+  <div class="sec-head"><h2>Der Ablauf</h2><span class="count">7 Phasen &middot; 37 Skills</span></div>
+  <p class="lead">Jede Phase baut auf der vorherigen auf und hat ihre eigene Farbe. Sie geben an den wichtigen Punkten frei, Claude Code erledigt die Arbeit.</p>
+
+  <!-- ==================== PHASE 0 ==================== -->
+  <div class="plan" style="--pc:#a47f49">
+    <div class="plan-head">
+      <p class="phase-label"><span class="no">0</span>Briefing und Plan</p>
+      <p class="note">3 Skills</p>
+    </div>
+    <p class="desc">Bevor gebaut wird, wird gefragt. Claude verhört Sie zum Vorhaben, bis alle offenen Punkte geklärt sind, und arbeitet dann diszipliniert nach Plan.</p>
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>grill-me</code> <span class="what">Interview zum Plan: alle Fragen werden geklärt, bevor es losgeht.</span></span>
+        <span class="src"><span class="kit">Im Kit enthalten</span></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>superpowers</code> <span class="what">Arbeitsdisziplin: erst denken, dann bauen, nichts ist fertig ohne Beweis. Läuft danach in jeder Phase automatisch mit.</span></span>
+        <span class="src"><a href="https://github.com/obra/superpowers">github.com/obra/superpowers</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>watch</code> <span class="what">Videos ansehen und auswerten: Transkript, Standbilder, Anleitungen daraus bauen (z.B. "/watch youtube-link").</span></span>
+        <span class="src"><a href="https://github.com/bradautomates/claude-video">github.com/bradautomates/claude-video</a></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ==================== PHASE 1 ==================== -->
+  <div class="plan" style="--pc:#38708c">
+    <div class="plan-head">
+      <p class="phase-label"><span class="no">1</span>Original erfassen</p>
+      <p class="note">3 Skills</p>
+    </div>
+    <p class="desc">Die bestehende Webseite wird vollständig gesichert: alle Texte, alle Unterseiten, Screenshots von jedem Bereich. Nichts geht verloren.</p>
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>firecrawl</code> <span class="what">Liest alle Inhalte Ihrer Webseite sauber aus: Texte, Struktur, Unterseiten.</span></span>
+        <span class="src"><a href="https://github.com/firecrawl/cli">github.com/firecrawl/cli</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>playwright-skill</code> <span class="what">Öffnet Webseiten im Browser und macht Screenshots, auch von Vorbild-Seiten.</span></span>
+        <span class="src"><a href="https://github.com/lackeyjb/playwright-skill">github.com/lackeyjb/playwright-skill</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>competitor-profiling</code> <span class="what">Analysiert 2-3 Wettbewerber-Webseiten systematisch als Vergleichsbasis.</span></span>
+        <span class="src"><a href="https://github.com/coreyhaines31/marketingskills">github.com/coreyhaines31/marketingskills</a></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ==================== PHASE 2 ==================== -->
+  <div class="plan" style="--pc:#7d5ba6">
+    <div class="plan-head">
+      <p class="phase-label"><span class="no">2</span>Brand und Struktur</p>
+      <p class="note">6 Skills</p>
+    </div>
+    <p class="desc">Ihre Marke wird zum System und die neue Seite bekommt einen klaren Bauplan: Farben, Schriften, Logo, Tonalität, Seitenstruktur und Navigation.</p>
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>brand-board</code> <span class="what">Erstellt ein professionelles Brand Board aus Ihrer Webseite und Ihren Dokumenten.</span></span>
+        <span class="src"><span class="kit">Im Kit enthalten</span></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>design-system</code> <span class="what">Baut daraus ein komplettes Design-System und ein Brand Book als PDF.</span></span>
+        <span class="src"><a href="https://github.com/robonuggets/design-system">github.com/robonuggets/design-system</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>brand-book-html</code>, <code>brand-book-paper</code> <span class="what">Brand Book als digitale HTML-Seite und als druckfertiges A4-Dokument.</span></span>
+        <span class="src"><a href="https://github.com/ordinarynerds/brand-book">github.com/ordinarynerds/brand-book</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>site-architecture</code> <span class="what">Plant Seitenstruktur, Navigation und URL-Aufbau der neuen Webseite.</span></span>
+        <span class="src"><a href="https://github.com/coreyhaines31/marketingskills">github.com/coreyhaines31/marketingskills</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>pdf</code> <span class="what">Erstellt und prüft PDFs, z.B. das Brand Book aus Prompt 2 dieser Anleitung.</span></span>
+        <span class="src"><a href="https://github.com/anthropics/skills">github.com/anthropics/skills</a></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ==================== PHASE 3 ==================== -->
+  <div class="plan" style="--pc:#18181b">
+    <div class="plan-head">
+      <p class="phase-label"><span class="no">3</span>Der Rebuild</p>
+      <p class="note">11 Skills</p>
+    </div>
+    <p class="desc">Das Herzstück. Ihre Inhalte bleiben zu 100 Prozent erhalten, das Design kommt von einer modernen Vorlage. An drei Punkten geben Sie frei, bevor es weitergeht.</p>
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>website-rebuild</code> <span class="what">Der Haupt-Skill: 9 Schritte, 3 Freigaben, übernimmt alle Inhalte und baut das neue Design.</span></span>
+        <span class="src"><span class="kit">Im Kit enthalten</span></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>copywriting</code> <span class="what">Schärft Texte, wo das Original schwach ist: Überschriften, Handlungsaufrufe, FAQ.</span></span>
+        <span class="src"><a href="https://github.com/coreyhaines31/marketingskills">github.com/coreyhaines31/marketingskills</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>image</code> <span class="what">Erzeugt und optimiert Bildmaterial, wenn das Original schwache Bilder hat.</span></span>
+        <span class="src"><a href="https://github.com/coreyhaines31/marketingskills">github.com/coreyhaines31/marketingskills</a></span>
+      </li>
+      <li class="subhead">Design-Leitlinien und Bausteine</li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>frontend-design</code> <span class="what">Hochwertiges, eigenständiges Design statt Baukasten-Optik.</span></span>
+        <span class="src"><a href="https://github.com/anthropics/claude-code">github.com/anthropics/claude-code</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>web-design-guidelines</code> <span class="what">Web-Design-Leitlinien von Vercel: Typografie, Layout, Interaktion.</span></span>
+        <span class="src"><a href="https://github.com/vercel-labs/agent-skills">github.com/vercel-labs/agent-skills</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>shadcn</code> <span class="what">Das shadcn/ui Komponenten-System korrekt einsetzen.</span></span>
+        <span class="src"><a href="https://github.com/shadcn-ui/ui">github.com/shadcn-ui/ui</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>taste-skill</code> <span class="what">Geschmacks-Leitplanken für eigenständiges, hochwertiges Design.</span></span>
+        <span class="src"><a href="https://github.com/leonxlnx/taste-skill">github.com/leonxlnx/taste-skill</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>industrial-brutalist-ui</code> <span class="what">Design-Richtung Industrial/Brutalist als markante Stil-Vorlage.</span></span>
+        <span class="src"><a href="https://github.com/leonxlnx/taste-skill">github.com/leonxlnx/taste-skill</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>ui-ux-pro-max</code> <span class="what">UI/UX-Profi-Regeln für durchdachte, benutzerfreundliche Oberflächen.</span></span>
+        <span class="src"><a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill">github.com/nextlevelbuilder/ui-ux-pro-max-skill</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>brutalist-skill</code> <span class="what">Design-Richtung Brutalist: rohe, markante Web-Optik.</span></span>
+        <span class="src"><a href="https://github.com/hamzafarooq/claude-code-starter">github.com/hamzafarooq/claude-code-starter</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>impeccable</code> <span class="what">Design-Qualitätswächter, prüft automatisch jede Änderung im Hintergrund.</span></span>
+        <span class="src"><a href="https://github.com/pbakaus/impeccable">github.com/pbakaus/impeccable</a></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ==================== PHASE 4 ==================== -->
+  <div class="plan" style="--pc:#4e8a5e">
+    <div class="plan-head">
+      <p class="phase-label"><span class="no">4</span>Feinschliff, Animation und Test</p>
+      <p class="note">7 Skills</p>
+    </div>
+    <p class="desc">Die neue Seite wird poliert, animiert und geprüft: jeder Klick, jedes Formular, jede Bildschirmgröße, und ein Sicherheits-Check obendrauf.</p>
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>make-interfaces-feel-better</code> <span class="what">Feinschliff für Abstände, Schriften, Schatten und Hover-Effekte.</span></span>
+        <span class="src"><a href="https://github.com/affaan-m/ECC">github.com/affaan-m/ECC</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>motion-ui</code> <span class="what">Moderne Animationen und Übergänge, die den Blick führen statt abzulenken.</span></span>
+        <span class="src"><a href="https://github.com/affaan-m/ECC">github.com/affaan-m/ECC</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>gsap-core</code>, <code>gsap-timeline</code>, <code>gsap-scrolltrigger</code> <span class="what">Profi-Animationen mit GSAP: Grundlagen, Abläufe, Scroll-Effekte (offiziell von GreenSock).</span></span>
+        <span class="src"><a href="https://github.com/greensock/gsap-skills">github.com/greensock/gsap-skills</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>webapp-testing</code> <span class="what">Klickt die Seite automatisch durch und findet Fehler vor dem Livegang.</span></span>
+        <span class="src"><a href="https://github.com/anthropics/skills">github.com/anthropics/skills</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>security-review</code> <span class="what">Sicherheitsprüfung: Formulare, Eingaben und Schnittstellen vor dem Livegang.</span></span>
+        <span class="src"><a href="https://github.com/affaan-m/ECC">github.com/affaan-m/ECC</a></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ==================== PHASE 5 ==================== -->
+  <div class="plan" style="--pc:#b0713a">
+    <div class="plan-head">
+      <p class="phase-label"><span class="no">5</span>Sichtbarkeit bei Google und KI</p>
+      <p class="note">4 Skills</p>
+    </div>
+    <p class="desc">Die neue Seite wird für Google optimiert UND dafür, dass KI-Systeme wie ChatGPT und Perplexity Ihr Unternehmen finden und empfehlen.</p>
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>seo-aeo-audit</code> <span class="what">Vollständiger SEO- und AEO-Check in 6 Schritten, auf Deutsch, mit Maßnahmenplan.</span></span>
+        <span class="src"><span class="kit">Im Kit enthalten</span></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>geo-aeo-deepdive</code> <span class="what">Vertiefter Maßnahmen-Report mit Schritt-für-Schritt-Anleitungen pro Tool.</span></span>
+        <span class="src"><span class="kit">Im Kit enthalten</span></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>schema</code> <span class="what">Strukturierte Daten (JSON-LD), damit Google und KI-Suchen die Seite verstehen.</span></span>
+        <span class="src"><a href="https://github.com/coreyhaines31/marketingskills">github.com/coreyhaines31/marketingskills</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>cro</code> <span class="what">Conversion-Check: warum Besucher nicht anfragen oder kaufen, mit konkreten Fixes.</span></span>
+        <span class="src"><a href="https://github.com/coreyhaines31/marketingskills">github.com/coreyhaines31/marketingskills</a></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ==================== PHASE 6 ==================== -->
+  <div class="plan" style="--pc:#21759b">
+    <div class="plan-head">
+      <p class="phase-label"><span class="no">6</span>Live auf WordPress und danach</p>
+      <p class="note">3 Skills</p>
+    </div>
+    <p class="desc">Die fertige, geprüfte Seite wird auf Ihr WordPress übertragen, erst nach Ihrer finalen Freigabe. Danach: Messung einrichten und lokale Sichtbarkeit ausbauen.</p>
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>novamira</code> <span class="what">Steuert Ihr WordPress direkt: Seiten, Inhalte, Theme, alles ohne Handarbeit.</span></span>
+        <span class="src"><span class="kit">Im Kit enthalten</span></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>analytics</code> <span class="what">Richtet Google Analytics 4 und Ereignis-Messung ein, damit Sie sehen was funktioniert.</span></span>
+        <span class="src"><a href="https://github.com/coreyhaines31/marketingskills">github.com/coreyhaines31/marketingskills</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><code>google-business-profile</code> <span class="what">Google Unternehmensprofil anlegen und optimieren: lokale Sichtbarkeit auf Google Maps.</span></span>
+        <span class="src"><span class="kit">Im Kit enthalten</span></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ============================================================
+       VORLAGE FUER NEUE SKILL-REIHEN (Kommentar entfernen, anpassen):
+
+  <li class="task">
+    <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+    <span class="label"><code>skill-name</code> <span class="what">Kurze Erklaerung.</span></span>
+    <span class="src"><a href="https://github.com/BENUTZER/REPO">github.com/BENUTZER/REPO</a></span>
+  </li>
+
+       Danach im Kit-Repo skills-manifest.txt ergaenzen:
+       github|https://github.com/BENUTZER/REPO|skill-name|Kurze Erklaerung
+       ============================================================ -->
+</section>
+
+<section style="--sc:#38708c">
+  <div class="sec-head"><h2>Vorlagen-Websites</h2><span class="count">ohne Installation</span></div>
+  <p class="lead">Keine Installation nötig, aber wichtig für Phase 3: moderne Design-Vorlagen und UI-Bausteine als Vorbild für den Rebuild.</p>
+  <div class="plan" style="--pc:#38708c;border-top:none;margin-top:8px">
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label">&#129513; <strong>21st.dev</strong> <span class="what">Riesige Sammlung moderner UI-Komponenten und Sektionen zum Abschauen und Übernehmen.</span></span>
+        <span class="src"><a href="https://21st.dev">21st.dev</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label">&#128444;&#65039; <strong>Type UI</strong> <span class="what">Kuratierte Design-Skills und Vorlagen für hochwertige Web-Oberflächen.</span></span>
+        <span class="src"><a href="https://www.typeui.sh/design-skills">typeui.sh/design-skills</a></span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section style="--sc:#7d5ba6">
+  <div class="sec-head"><h2>Design System - Brand Book erstellen</h2><span class="count">2 Prompt-Vorlagen</span></div>
+  <p class="lead">Zwei Prompts für Phase 2: der erste lässt Claude das bestehende Designsystem
+  einer Webseite exakt dokumentieren, der zweite macht daraus ein druckfertiges Brand Book als PDF.
+  Einfach kopieren, die Beispiel-Adresse durch die echte ersetzen und in Claude Code einfügen.</p>
+  <div class="install" style="user-select:all">
+    <div class="lbl" style="user-select:none">Prompt 1: Designsystem analysieren</div>
+    <code style="white-space:pre-wrap"># Rolle
+Du bist ein erfahrener Design-System-Analyst und Art Director. Du
+dokumentierst die Designsprache bestehender Websites exakt und wertfrei,
+ohne eigene Gestaltungsideen einzubringen.
+
+# Aufgabe
+Analysiere das komplette visuelle Designsystem der folgenden Website und
+dokumentiere es als verbindliches Design-System:
+
+https://www.example.com
+
+# Kontext
+Die Website selbst ist die einzige Quelle der Wahrheit. Grundlage ist die
+tatsächlich im Browser gerenderte Seite, nicht Vermutungen und nicht
+Branchenstandards. Das Ergebnis dient als Design-Grundlage fuer einen
+Website-Rebuild: neue Seiten muessen damit exakt zum Original passen.
+
+# Anleitung
+Gehe in dieser Reihenfolge vor:
+
+1. Oeffne die Website im Browser. Erfasse die Startseite und 2-3 typische
+   Unterseiten.
+2. Extrahiere praezise, mit exakten Werten:
+   a) Farben: Primaer-, Sekundaer-, Akzent-, Flaechen- und Textfarben
+   b) Typografie: Schriftfamilien, Schriftgroessen, Schriftschnitte,
+      Zeilenhoehen
+   c) Abstaende und Raster: Spacing-Skala, Grid-System, Containerbreiten
+   d) Formen: Eckenradien und Schatten
+   e) Komponenten: Buttons, Karten, Formulare, Navigation, jeweils alle
+      Zustaende (normal, Hover, aktiv, deaktiviert)
+   f) Icons, Bildstil und Hintergruende
+   g) Visuelle Hierarchie: wie Groesse, Farbe und Abstand die
+      Aufmerksamkeit lenken
+   h) Responsive-Verhalten: Handy, Tablet, Desktop
+   i) Bewegung: Animationen, Uebergaenge, Scroll-Effekte
+3. Pruefe jede Angabe am gerenderten Original nach (Computed Styles,
+   Screenshots), bevor du sie dokumentierst.
+
+# Regeln
+- Gestalte die Marke NICHT neu und interpretiere nichts um.
+- Dokumentiere ausschliesslich, was existiert. Keine
+  Verbesserungsvorschlaege.
+- Jede Angabe mit exaktem Wert. Keine Umschreibungen wie "dunkelblau".
+
+# Ausgabe
+Erstelle genau drei Dateien:
+1. DESIGN.md, das Designsystem im Ueberblick
+2. design-guidelines.md, verbindliche Gestaltungsregeln mit allen Werten
+3. design-components.md, Komponenten-Katalog mit exakten Massen und
+   Zustaenden
+
+# Qualitaetskriterium
+Ein anderer KI-Agent muss allein mit diesen drei Dateien neue Seiten bauen
+koennen, die visuell nicht von der bestehenden Website zu unterscheiden
+sind.</code>
+  </div>
+  <div class="install" style="user-select:all;margin-top:18px">
+    <div class="lbl" style="user-select:none">Prompt 2: Brand Design als PDF</div>
+    <code style="white-space:pre-wrap"># Rolle
+Du bist ein Brand-Designer und Art Director, spezialisiert auf Brand Books
+und Markendokumentation in Druckqualitaet.
+
+# Aufgabe
+Erstelle aus dem dokumentierten Designsystem ein professionelles Brand Book
+als druckfertiges PDF im A4-Format.
+
+# Kontext
+Grundlage sind die drei Dateien aus der Designsystem-Analyse (DESIGN.md,
+design-guidelines.md, design-components.md) sowie die Logo-Dateien und
+weitere Markenunterlagen, falls vorhanden. Das Brand Book dient Kunde,
+Agentur und KI-Agenten als verbindliches Nachschlagewerk der Marke.
+
+# Anleitung
+1. Baue das Brand Book mit dieser Kapitelstruktur, je Kapitel eine Seite
+   oder Doppelseite:
+   a) Deckblatt mit Logo und Markenname
+   b) Markenuebersicht: Positionierung und Tonalitaet in 3-4 Saetzen
+   c) Logo: Varianten, Schutzraum, Mindestgroessen, verbotene Anwendungen
+   d) Farben: Palette mit exakten Werten (HEX, RGB, CMYK) und Einsatzregeln
+   e) Typografie: Schriftfamilien, Schnitte, Groessenhierarchie, Beispiele
+   f) Bildsprache: Stil, Motive, erlaubte und verbotene Beispiele
+   g) Komponenten: Buttons, Karten, Formulare mit exakten Massen
+   h) Anwendungsbeispiele: Website, Briefpapier, Social Media
+2. Setze das Brand Book zuerst als HTML im A4-Format um (Skill
+   brand-book-paper) und pruefe das Layout Seite fuer Seite.
+3. Exportiere als PDF und kontrolliere: Seitenumbrueche, Lesbarkeit,
+   Farbtreue, keine abgeschnittenen Elemente.
+
+# Regeln
+- Nutze ausschliesslich die dokumentierten Markenwerte. Erfinde nichts dazu.
+- Das Brand Book selbst muss im Design der Marke gestaltet sein: ihre
+  Farben, ihre Schriften, ihre Bildsprache.
+- Druckqualitaet: A4, saubere Raender, konsistente Kopf- und Fusszeilen.
+
+# Ausgabe
+Erstelle genau zwei Dateien:
+1. brand-book.html, das A4-Layout, druckfertig
+2. brand-book.pdf, das finale Dokument
+
+# Qualitaetskriterium
+Das PDF muss so professionell sein, dass eine Design-Agentur es als
+bezahltes Deliverable an ihren Kunden uebergeben koennte.</code>
+  </div>
+  <p class="hint">Passende Skills dazu: <code>design-system</code>, <code>brand-book-html</code> und
+  <code>brand-book-paper</code> (Phase 2) machen aus der Analyse die fertigen Dokumente.</p>
+</section>
+
+<section style="--sc:#b0713a">
+  <div class="sec-head"><h2>Browser Extensions</h2><span class="count">4 Erweiterungen</span></div>
+  <p class="lead">Diese Erweiterungen bitte im Browser installieren (Chrome oder Microsoft Edge,
+  Edge kann Chrome-Erweiterungen direkt aus dem Chrome Web Store installieren). Sie machen die
+  Zusammenarbeit mit Claude rund.</p>
+  <div class="plan" style="--pc:#b0713a;border-top:none;margin-top:8px">
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>Claude for Chrome</strong> <span class="what">Claude direkt im Browser: Seiten ansehen, vergleichen und prüfen lassen.</span></span>
+        <span class="src"><a href="https://claude.ai/chrome">claude.ai/chrome</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>SEO META in 1 Klick</strong> <span class="what">Zeigt alle SEO-Daten einer Seite auf einen Blick: Titel, Beschreibungen, Überschriften.</span></span>
+        <span class="src"><a href="https://chromewebstore.google.com/detail/seo-meta-in-1-click/bjogjfinolnhfhkbipphpdlldadpnmhc">Chrome Web Store</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>GoFullPage</strong> <span class="what">Macht mit einem Klick einen Screenshot der ganzen Seite, von oben bis unten.</span></span>
+        <span class="src"><a href="https://gofullpage.com">gofullpage.com</a></span>
+      </li>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>llms.txt Checker by AM</strong> <span class="what">Prüft mit einem Klick, ob eine Webseite eine llms.txt hat, die Datei, mit der KI-Systeme wie ChatGPT und Perplexity eine Seite gezielt lesen und zitieren können. Wichtig für Phase 5: die neue Seite MUSS eine haben, sonst verschenkt sie KI-Sichtbarkeit, und beim Wettbewerber-Check sehen Sie sofort, wer schon so weit ist.</span></span>
+        <span class="src"><a href="https://chromewebstore.google.com/detail/llmstxt-checker-by-am-i-v/dfbglpledfnnehkjggkkkdgfpmflonmp">Chrome Web Store</a></span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section style="--sc:#21759b">
+  <div class="sec-head"><h2>Wichtige Webseiten</h2><span class="count">1 Werkzeug</span></div>
+  <p class="lead">Nützliche Helfer im Browser, ohne Installation.</p>
+  <div class="plan" style="--pc:#21759b;border-top:none;margin-top:8px">
+    <ul>
+      <li class="task">
+        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
+        <span class="label"><strong>HTML Viewer</strong> <span class="what">HTML-Dateien direkt im Browser ansehen und prüfen, z.B. Zwischenstände des Rebuilds.</span></span>
+        <span class="src"><a href="https://html.onlineviewer.net/">html.onlineviewer.net</a></span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section style="--sc:#4e8a5e">
+  <div class="sec-head"><h2>Merkzettel: Ihre Befehle</h2><span class="count">7 Skills &middot; 6 Grundbefehle</span></div>
+  <p class="lead">Der Rebuild-Skill fragt alles Weitere selbst ab (Webseiten-Adresse, Design-Vorlage) und meldet sich an den Freigabepunkten bei Ihnen.</p>
+  <table>
+    <tr><th>Wann</th><th>Befehl</th></tr>
+    <tr><td>Plan verhören lassen</td><td><code>/grill-me</code></td></tr>
+    <tr><td>Rebuild starten</td><td><code>/website-rebuild</code></td></tr>
+    <tr><td>Brand Board erstellen</td><td><code>/brand-board</code></td></tr>
+    <tr><td>Feinschliff anstoßen</td><td><code>/make-interfaces-feel-better</code></td></tr>
+    <tr><td>Seite testen</td><td><code>/webapp-testing</code></td></tr>
+    <tr><td>Sicherheits-Check</td><td><code>/security-review</code></td></tr>
+    <tr><td>SEO/KI-Check</td><td><code>/seo-aeo-audit</code></td></tr>
+  </table>
+  <p class="lead" style="margin-top:22px"><strong>6 wichtige Claude-Code-Grundbefehle</strong>, die immer funktionieren:</p>
+  <table>
+    <tr><th>Wozu</th><th>Befehl</th></tr>
+    <tr><td>CLAUDE.md aus vorhandenem Projekt erzeugen</td><td><code>/init</code></td></tr>
+    <tr><td>Neues Thema beginnen, Verlauf leeren</td><td><code>/clear</code></td></tr>
+    <tr><td>Langen Verlauf verdichten, wenn die Sitzung träge wird</td><td><code>/compact</code></td></tr>
+    <tr><td>Frühere Sitzung fortsetzen</td><td><code>/resume</code></td></tr>
+    <tr><td>Claude sofort stoppen/unterbrechen</td><td><code>Esc</code></td></tr>
+    <tr><td>Alle Befehle anzeigen</td><td><code>/help</code></td></tr>
+  </table>
+</section>
+
+<footer>
+  <div>
+    <div class="who">DER KI BERATER, Akan Celik, MAS</div>
+    <div>Website-Rebuild Kit, Stand August 2026</div>
+  </div>
+  <div class="site">der-ki-berater.at</div>
+</footer>
+
+</div>
+</body>
+</html>
