@@ -146,6 +146,13 @@ while IFS='|' read -r typ quelle name desc; do
       fi
       ;;
     brew)
+      # macOS/Linux: Homebrew. Windows (Git Bash): winget with mapped IDs.
+      case "$quelle" in
+        gh)     winget_id="GitHub.cli" ;;
+        ffmpeg) winget_id="Gyan.FFmpeg" ;;
+        yt-dlp) winget_id="yt-dlp.yt-dlp" ;;
+        *)      winget_id="" ;;
+      esac
       if command -v "$name" >/dev/null 2>&1; then
         ok "Werkzeug $name bereits vorhanden"
       elif command -v brew >/dev/null 2>&1; then
@@ -154,8 +161,14 @@ while IFS='|' read -r typ quelle name desc; do
         else
           warn "Werkzeug $quelle konnte nicht installiert werden. Manuell: brew install $quelle"
         fi
+      elif command -v winget >/dev/null 2>&1 && [ -n "$winget_id" ]; then
+        if winget install --id "$winget_id" -e --silent --accept-package-agreements --accept-source-agreements >/dev/null 2>&1; then
+          ok "Werkzeug $name installiert (winget). Hinweis: neues Terminal oeffnen, damit es gefunden wird."
+        else
+          warn "Werkzeug $name konnte nicht installiert werden. Manuell: winget install --id $winget_id"
+        fi
       else
-        warn "Homebrew fehlt (https://brew.sh). Danach: brew install $quelle"
+        warn "Mac/Linux: Homebrew installieren (https://brew.sh), dann: brew install $quelle. Windows: winget install --id ${winget_id:-$quelle}"
       fi
       ;;
     *)
