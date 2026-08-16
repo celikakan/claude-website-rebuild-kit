@@ -172,34 +172,29 @@
 </section>
 
 <section style="--sc:#21759b">
-  <div class="sec-head"><h2>Anleitung für Windows</h2><span class="count">einmalig, 5 Schritte</span></div>
-  <p class="lead">Dieselbe Grundausstattung für Windows-Rechner. Danach ist alles identisch
-  zur Mac-Anleitung, gleicher Installations-Befehl, gleiche Skills.</p>
+  <div class="sec-head"><h2>Anleitung für Windows</h2><span class="count">einmalig, 4 Schritte</span></div>
+  <p class="lead">Dieselbe Grundausstattung für Windows-Rechner. Git müssen Sie NICHT selbst
+  installieren, das erledigt der Windows-Installations-Befehl automatisch.</p>
   <div class="plan" style="--pc:#21759b;border-top:none;margin-top:8px">
     <ul>
       <li class="task">
         <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
-        <span class="label"><strong>1. Git für Windows installieren</strong> <span class="what">bringt automatisch das Programm <em>Git Bash</em> mit, das Terminal für den Installations-Befehl.</span></span>
-        <span class="src"><a href="https://git-scm.com">git-scm.com</a></span>
-      </li>
-      <li class="task">
-        <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
-        <span class="label"><strong>2. Node.js installieren</strong> <span class="what">LTS-Version wählen, im Installer alles auf Standard lassen.</span></span>
+        <span class="label"><strong>1. Node.js installieren</strong> <span class="what">LTS-Version wählen, im Installer alles auf Standard lassen.</span></span>
         <span class="src"><a href="https://nodejs.org">nodejs.org</a></span>
       </li>
       <li class="task">
         <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
-        <span class="label"><strong>3. VS Code + Claude-Code-Extension</strong> <span class="what">VS Code installieren, dann in VS Code unter Extensions "Claude Code" (Anthropic) hinzufügen, wie in der Mac-Anleitung.</span></span>
+        <span class="label"><strong>2. VS Code + Claude-Code-Extension</strong> <span class="what">VS Code installieren, dann in VS Code unter Extensions "Claude Code" (Anthropic) hinzufügen.</span></span>
         <span class="src"><a href="https://code.visualstudio.com">code.visualstudio.com</a></span>
       </li>
       <li class="task">
         <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
-        <span class="label"><strong>4. Claude Code installieren</strong> <span class="what">Git Bash öffnen (Startmenü, "Git Bash" eintippen) und ausführen: <code style="background:var(--code);padding:2px 6px;border-radius:5px">npm install -g @anthropic-ai/claude-code</code>, danach einmal <code style="background:var(--code);padding:2px 6px;border-radius:5px">claude</code> tippen und anmelden.</span></span>
+        <span class="label"><strong>3. Claude Code installieren</strong> <span class="what">PowerShell öffnen (Startmenü, "PowerShell" eintippen) und ausführen: <code style="background:var(--code);padding:2px 6px;border-radius:5px">npm install -g @anthropic-ai/claude-code</code>, danach einmal <code style="background:var(--code);padding:2px 6px;border-radius:5px">claude</code> tippen und anmelden.</span></span>
         <span class="src"><a href="https://claude.com/claude-code">claude.com/claude-code</a></span>
       </li>
       <li class="task">
         <svg class="box" viewBox="0 0 14 14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="3.5"/><path d="M 3.5 7.5 L 6 10 L 10.5 4.5" pathLength="1"/></svg>
-        <span class="label"><strong>5. Skill-Kit installieren</strong> <span class="what">in Git Bash den One-Click-Befehl aus der Sektion oben einfügen. Die Werkzeuge (gh, ffmpeg, yt-dlp) installiert das Script unter Windows automatisch über winget. Danach ein neues Terminal öffnen, damit alles gefunden wird.</span></span>
+        <span class="label"><strong>4. Skill-Kit installieren</strong> <span class="what">in derselben PowerShell den Windows-Befehl aus der Installations-Sektion einfügen: <code style="background:var(--code);padding:2px 6px;border-radius:5px">irm .../install.ps1 | iex</code>. Er richtet fehlendes Git automatisch ein und installiert alle Skills plus Werkzeuge (gh, ffmpeg, yt-dlp) über winget. Danach ein neues Terminal öffnen, damit alles gefunden wird.</span></span>
       </li>
     </ul>
   </div>
@@ -346,11 +341,10 @@
 
 <section style="--sc:#a47f49">
   <div class="sec-head"><h2>Installation des Skill-Kits (One-Click Installation)</h2><span class="count">1 Befehl</span></div>
-  <p class="lead">Öffnen Sie das Programm <strong>Terminal</strong>.
+  <p class="lead">Öffnen Sie Ihr Terminal.
   Mac: Cmd+Leertaste drücken, „Terminal" eintippen, Enter.
-  Windows: Startmenü öffnen, „Git Bash" eintippen, Enter (kommt automatisch mit Git,
-  Download: <a href="https://git-scm.com" style="color:var(--gold);font-weight:600;text-decoration:none">git-scm.com</a>).
-  Dann diese Zeile einfügen und Enter drücken:</p>
+  Windows: Startmenü öffnen, „PowerShell" eintippen, Enter.
+  Dann den passenden Befehl einfügen und Enter drücken:</p>
   <div class="install">
     <div class="lbl">Mac / Linux: im Terminal einfügen</div>
     <code>curl -fsSL https://raw.githubusercontent.com/celikakan/claude-website-rebuild-kit/main/install.sh | bash</code>
