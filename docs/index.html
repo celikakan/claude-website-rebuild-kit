@@ -352,13 +352,24 @@
   Download: <a href="https://git-scm.com" style="color:var(--gold);font-weight:600;text-decoration:none">git-scm.com</a>).
   Dann diese Zeile einfügen und Enter drücken:</p>
   <div class="install">
-    <div class="lbl">Im Terminal einfügen</div>
+    <div class="lbl">Mac / Linux: im Terminal einfügen</div>
     <code>curl -fsSL https://raw.githubusercontent.com/celikakan/claude-website-rebuild-kit/main/install.sh | bash</code>
   </div>
+  <div class="install" style="margin-top:10px">
+    <div class="lbl">Windows: in PowerShell einfügen (Startmenü, "PowerShell" eintippen)</div>
+    <code>irm https://raw.githubusercontent.com/celikakan/claude-website-rebuild-kit/main/install.ps1 | iex</code>
+  </div>
+  <p class="hint">Der Windows-Befehl richtet fehlendes Git automatisch ein und startet dann
+  dieselbe Installation. Git Bash wird dafür NICHT vorab gebraucht.</p>
   <p class="hint">Installiert automatisch alle 37 Skills aus diesem Dokument plus die Werkzeuge
   <code>firecrawl</code>, <code>novamira</code>, <code>gh</code> (GitHub CLI), <code>ffmpeg</code> und <code>yt-dlp</code>, und zeigt am Ende eine Erfolgsliste.
   Danach Claude Code einmal neu starten.
   Kit auf GitHub: <a href="https://github.com/celikakan/claude-website-rebuild-kit">github.com/celikakan/claude-website-rebuild-kit</a></p>
+  <p class="hint"><strong>Tipp, der einfachste Weg:</strong> Sie können den Befehl auch direkt in
+  VS Code ausführen. Entweder im VS-Code-Terminal (Windows: im Terminal-Dropdown neben dem Plus
+  <em>Git Bash</em> wählen, PowerShell kann den Befehl nicht), oder noch einfacher: den Befehl ins
+  Claude-Panel einfügen und dazuschreiben "führe diesen Befehl aus". Claude fragt um Erlaubnis und
+  erledigt den Rest.</p>
   <p class="hint"><strong>Später erweitern:</strong> neue Skills werden im Kit in der Datei
   <code>skills-manifest.txt</code> ergänzt (eine Zeile pro Skill).
   Denselben Befehl erneut ausführen, die Installation aktualisiert sich selbst.</p>
