@@ -68,7 +68,9 @@ install_skill_dir() {
 clone_repo() {
   local url="$1"
   local key
-  key="$(printf '%s' "$url" | shasum | cut -c1-12)"
+  # cksum, not shasum: shasum needs Perl and is absent from Git Bash on
+  # Windows; an empty key would collapse every repo onto one cache dir.
+  key="$(printf '%s' "$url" | cksum | cut -d' ' -f1)"
   local dir="$CLONE_CACHE/$key"
   if [ ! -d "$dir" ]; then
     git clone --quiet --depth 1 "$url" "$dir" || return 1
