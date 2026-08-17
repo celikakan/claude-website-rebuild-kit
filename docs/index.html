@@ -359,11 +359,16 @@
   <code>firecrawl</code>, <code>novamira</code>, <code>gh</code> (GitHub CLI), <code>ffmpeg</code> und <code>yt-dlp</code>, und zeigt am Ende eine Erfolgsliste.
   Danach Claude Code einmal neu starten.
   Kit auf GitHub: <a href="https://github.com/celikakan/claude-website-rebuild-kit">github.com/celikakan/claude-website-rebuild-kit</a></p>
-  <p class="hint"><strong>Tipp, der einfachste Weg:</strong> Sie können den Befehl auch direkt in
-  VS Code ausführen. Entweder im VS-Code-Terminal (Windows: im Terminal-Dropdown neben dem Plus
-  <em>Git Bash</em> wählen, PowerShell kann den Befehl nicht), oder noch einfacher: den Befehl ins
-  Claude-Panel einfügen und dazuschreiben "führe diesen Befehl aus". Claude fragt um Erlaubnis und
-  erledigt den Rest.</p>
+  <p class="hint"><strong>Oder direkt über das Claude-Panel in VS Code:</strong> die beiden Befehle
+  oben funktionieren dort NICHT (Claude Code blockiert aus Sicherheitsgründen Befehle, die Code
+  direkt aus dem Internet in eine Shell leiten). Fügen Sie stattdessen diese Zeile ins Claude-Panel
+  ein, mit der Bitte, sie auszuführen:</p>
+  <div class="install" style="margin-top:10px">
+    <div class="lbl">Claude-Panel (Mac und Windows)</div>
+    <code>git clone https://github.com/celikakan/claude-website-rebuild-kit &amp;&amp; bash claude-website-rebuild-kit/install.sh &amp;&amp; rm -rf claude-website-rebuild-kit</code>
+  </div>
+  <p class="hint">Hier lädt Claude das Kit erst herunter, kann das Install-Script vor dem Ausführen
+  lesen und fragt dann normal um Ihre Freigabe. Ergebnis ist identisch.</p>
   <p class="hint"><strong>Später erweitern:</strong> neue Skills werden im Kit in der Datei
   <code>skills-manifest.txt</code> ergänzt (eine Zeile pro Skill).
   Denselben Befehl erneut ausführen, die Installation aktualisiert sich selbst.</p>
